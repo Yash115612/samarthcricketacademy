@@ -399,6 +399,8 @@ async function saveDb(): Promise<void> {
 
 /** Call this at the top of any API route on Netlify to load the latest DB snapshot. */
 export async function ensureDbSynced(): Promise<void> {
+  const isNetlify = !!(process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT);
+  if (!isNetlify) return;
   await _syncDbFromBlobs(db as unknown as Record<string, unknown>, () => {
     rebuildIndexes();
     invalidateCache();

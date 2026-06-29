@@ -5,7 +5,7 @@
  * Lambda cold starts. This module persists the full DB snapshot to Netlify Blobs
  * so data survives cold starts.
  *
- * On local dev, all functions are no-ops.
+ * On Vercel or local dev, all functions are no-ops.
  */
 
 const STORE_NAME = "cricket-academy-db";
@@ -45,6 +45,7 @@ export async function loadFromBlobs(): Promise<object | null> {
 let _syncPromise: Promise<void> | null = null;
 
 export function syncDbFromBlobs(db: Record<string, unknown>, onLoaded?: () => void): Promise<void> {
+  if (!isNetlify) return Promise.resolve();
   if (_syncPromise) return _syncPromise;
   _syncPromise = (async () => {
     const snapshot = await loadFromBlobs();

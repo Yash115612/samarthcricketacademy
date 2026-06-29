@@ -4,9 +4,13 @@ import { ensureDbSynced } from "@/server/db/inMemoryDb";
 
 // On Netlify, NEXTAUTH_URL is not set automatically.
 // Netlify always provides the canonical site URL via the `URL` env var.
-// We patch it before NextAuth reads it so OAuth callbacks resolve correctly.
-if (!process.env.NEXTAUTH_URL && process.env.URL) {
-  process.env.NEXTAUTH_URL = process.env.URL;
+// On Vercel, VERCEL_URL is used instead.
+if (!process.env.NEXTAUTH_URL) {
+  if (process.env.URL) {
+    process.env.NEXTAUTH_URL = process.env.URL;
+  } else if (process.env.VERCEL_URL) {
+    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+  }
 }
 
 const nextAuthHandler = NextAuth(authOptions);
