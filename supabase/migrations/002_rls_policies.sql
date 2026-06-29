@@ -64,37 +64,56 @@ CREATE POLICY "Public can view branches" ON public.branches
 
 -- Allow full access for authenticated users (we'll restrict via app logic)
 -- In production, we'd tie this to Supabase Auth roles, but for now, keep it simple
-CREATE POLICY "Authenticated users have full access" ON public.branches
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.users
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.coach_profiles
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.staff_attendances
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.coaching_sessions
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.memberships
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.plans
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.matches
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.match_participants
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.performances
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.attendances
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.notices
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.payments
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.enquiries
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.site_settings
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.shop_items
-    USING (auth.role() = 'authenticated' OR true);
-CREATE POLICY "Authenticated users have full access" ON public.branch_settings
-    USING (auth.role() = 'authenticated' OR true);
+-- Note: Using service role, so RLS effectively bypassed, but policies are defined for future use
+
+-- Branches
+CREATE POLICY "Enable full access for service role" ON public.branches
+    FOR ALL USING (true) WITH CHECK (true);
+-- Users
+CREATE POLICY "Enable full access for service role" ON public.users
+    FOR ALL USING (true) WITH CHECK (true);
+-- Coach Profiles
+CREATE POLICY "Enable full access for service role" ON public.coach_profiles
+    FOR ALL USING (true) WITH CHECK (true);
+-- Staff Attendances
+CREATE POLICY "Enable full access for service role" ON public.staff_attendances
+    FOR ALL USING (true) WITH CHECK (true);
+-- Coaching Sessions
+CREATE POLICY "Enable full access for service role" ON public.coaching_sessions
+    FOR ALL USING (true) WITH CHECK (true);
+-- Memberships
+CREATE POLICY "Enable full access for service role" ON public.memberships
+    FOR ALL USING (true) WITH CHECK (true);
+-- Plans
+CREATE POLICY "Enable full access for service role" ON public.plans
+    FOR ALL USING (true) WITH CHECK (true);
+-- Matches
+CREATE POLICY "Enable full access for service role" ON public.matches
+    FOR ALL USING (true) WITH CHECK (true);
+-- Match Participants
+CREATE POLICY "Enable full access for service role" ON public.match_participants
+    FOR ALL USING (true) WITH CHECK (true);
+-- Performances
+CREATE POLICY "Enable full access for service role" ON public.performances
+    FOR ALL USING (true) WITH CHECK (true);
+-- Attendances
+CREATE POLICY "Enable full access for service role" ON public.attendances
+    FOR ALL USING (true) WITH CHECK (true);
+-- Notices
+CREATE POLICY "Enable full access for service role" ON public.notices
+    FOR ALL USING (true) WITH CHECK (true);
+-- Payments
+CREATE POLICY "Enable full access for service role" ON public.payments
+    FOR ALL USING (true) WITH CHECK (true);
+-- Enquiries
+CREATE POLICY "Enable full access for service role" ON public.enquiries
+    FOR ALL USING (true) WITH CHECK (true);
+-- Site Settings
+CREATE POLICY "Enable full access for service role" ON public.site_settings
+    FOR ALL USING (true) WITH CHECK (true);
+-- Shop Items
+CREATE POLICY "Enable full access for service role" ON public.shop_items
+    FOR ALL USING (true) WITH CHECK (true);
+-- Branch Settings
+CREATE POLICY "Enable full access for service role" ON public.branch_settings
+    FOR ALL USING (true) WITH CHECK (true);

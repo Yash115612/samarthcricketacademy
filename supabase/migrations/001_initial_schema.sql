@@ -247,3 +247,69 @@ BEGIN
         ', t, t);
     END LOOP;
 END $$;
+
+-- =====================================================
+-- Create indexes for common queries
+-- =====================================================
+
+-- Users table
+CREATE INDEX idx_users_branch_id ON public.users(branch_id);
+CREATE INDEX idx_users_email ON public.users(email);
+CREATE INDEX idx_users_role ON public.users(role);
+
+-- Coach profiles
+CREATE INDEX idx_coach_profiles_user_id ON public.coach_profiles(user_id);
+CREATE INDEX idx_coach_profiles_is_active ON public.coach_profiles(is_active);
+
+-- Staff Attendances
+CREATE INDEX idx_staff_attendances_coach_id ON public.staff_attendances(coach_id);
+CREATE INDEX idx_staff_attendances_date ON public.staff_attendances(date);
+
+-- Coaching Sessions
+CREATE INDEX idx_coaching_sessions_coach_id ON public.coaching_sessions(coach_id);
+CREATE INDEX idx_coaching_sessions_user_id ON public.coaching_sessions(user_id);
+CREATE INDEX idx_coaching_sessions_date ON public.coaching_sessions(date);
+
+-- Memberships
+CREATE INDEX idx_memberships_user_id ON public.memberships(user_id);
+CREATE INDEX idx_memberships_status ON public.memberships(status);
+
+-- Matches
+CREATE INDEX idx_matches_branch_id ON public.matches(branch_id);
+CREATE INDEX idx_matches_date ON public.matches(date);
+CREATE INDEX idx_matches_status ON public.matches(status);
+
+-- Match Participants
+CREATE INDEX idx_match_participants_match_id ON public.match_participants(match_id);
+CREATE INDEX idx_match_participants_user_id ON public.match_participants(user_id);
+
+-- Performances
+CREATE INDEX idx_performances_user_id ON public.performances(user_id);
+CREATE INDEX idx_performances_match_id ON public.performances(match_id);
+
+-- Attendances (players)
+CREATE INDEX idx_attendances_user_id ON public.attendances(user_id);
+CREATE INDEX idx_attendances_date ON public.attendances(date);
+
+-- Notices
+CREATE INDEX idx_notices_branch_id ON public.notices(branch_id);
+CREATE INDEX idx_notices_date ON public.notices(date);
+CREATE INDEX idx_notices_important ON public.notices(important);
+
+-- Payments
+CREATE INDEX idx_payments_user_id ON public.payments(user_id);
+CREATE INDEX idx_payments_date ON public.payments(date);
+CREATE INDEX idx_payments_status ON public.payments(status);
+
+-- Enquiries
+CREATE INDEX idx_enquiries_user_id ON public.enquiries(user_id);
+CREATE INDEX idx_enquiries_status ON public.enquiries(status);
+
+-- Site Settings
+CREATE INDEX idx_site_settings_key ON public.site_settings(key);
+
+-- Shop Items
+CREATE INDEX idx_shop_items_is_active ON public.shop_items(is_active);
+
+-- Branch Settings
+CREATE INDEX idx_branch_settings_branch_id ON public.branch_settings(branch_id);
