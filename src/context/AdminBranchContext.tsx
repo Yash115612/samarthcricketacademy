@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import type { BranchId } from "@/types/dashboard";
 
 interface AdminBranchContextType {
@@ -43,7 +43,7 @@ export function AdminBranchProvider({ children }: { children: React.ReactNode })
     load();
   }, []);
 
-  const handleSetBranch = async (id: BranchId) => {
+  const handleSetBranch = useCallback(async (id: BranchId) => {
     setCurrentBranchId(id);
     localStorage.setItem("admin_current_branch_id", id);
     document.cookie = `admin_current_branch_id=${id}; path=/; max-age=${60 * 60 * 24 * 30}`;
@@ -57,10 +57,16 @@ export function AdminBranchProvider({ children }: { children: React.ReactNode })
         if (found) setBranchName(found.name);
       }
     } catch {}
-  };
+  }, []);
+
+  const value = useMemo(() => ({ 
+    currentBranchId, 
+    setCurrentBranchId: handleSetBranch, 
+    branchName 
+  }), [currentBranchId, handleSetBranch, branchName]);
 
   return (
-    <AdminBranchContext.Provider value={{ currentBranchId, setCurrentBranchId: handleSetBranch, branchName }}>
+    <AdminBranchContext.Provider value={value}>
       {children}
     </AdminBranchContext.Provider>
   );

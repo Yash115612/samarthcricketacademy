@@ -18,6 +18,10 @@ const config: Config = {
           gray: "#2D2D2D",
         },
       },
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        heading: ["var(--font-heading)"],
+      },
     },
   },
   plugins: [],
