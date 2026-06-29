@@ -325,7 +325,6 @@ export interface DbNotification {
 
 
 import { invalidateCache } from "@/server/cache";
-import { saveToBlobsAsync, syncDbFromBlobs as _syncDbFromBlobs } from "./netlifyBlobs";
 import bcrypt from "bcryptjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -398,21 +397,16 @@ async function saveDb(): Promise<void> {
     console.warn("Database file save failed (safe to ignore on serverless platforms)", err);
   } finally {
     isSaving = false;
-    saveToBlobsAsync(db);
     if (pendingSave) {
       saveDb();
     }
   }
 }
 
-/** Call this at the top of any API route on Netlify to load the latest DB snapshot. */
+/** @deprecated No longer used since moving from Netlify to Vercel */
 export async function ensureDbSynced(): Promise<void> {
-  const isNetlify = !!(process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT);
-  if (!isNetlify) return;
-  await _syncDbFromBlobs(db as unknown as Record<string, unknown>, () => {
-    rebuildIndexes();
-    invalidateCache();
-  });
+  // No-op now that we're not using Netlify Blobs
+  return;
 }
 
 function loadPersistedDb(): DbState | null {
