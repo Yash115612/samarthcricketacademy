@@ -362,32 +362,40 @@ async function saveDb(): Promise<void> {
   rebuildIndexes();
   invalidateCache();
 
+  // Check if we're in a serverless environment (like Vercel or Netlify)
+  // On Vercel in production, we skip FS operations to avoid crashes
+  const isNetlify = !!(process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT);
+  const isVercel = !!(process.env.VERCEL || process.env.VERCEL_URL);
+
   try {
-    const data = JSON.stringify(db, null, 2);
-    
-    // Async file write to keep the event loop free
-    await fs.promises.mkdir(path.dirname(DB_FILE), { recursive: true });
-    await fs.promises.writeFile(DB_FILE, data, "utf-8");
-    
-    // Skip backups for very large databases to save disk space and time
-    const isVeryLarge = data.length > 50 * 1024 * 1024; // 50MB
-    const now = new Date();
-    const lastBackup = (db as any)._last_backup_at;
-    if (!isVeryLarge && (!lastBackup || now.getTime() - new Date(lastBackup).getTime() > 24 * 60 * 60 * 1000)) {
-      await fs.promises.mkdir(BACKUP_DIR, { recursive: true });
-      const backupFile = path.join(BACKUP_DIR, `db_${now.toISOString().replace(/[:.]/g, "-")}.json`);
-      await fs.promises.writeFile(backupFile, data, "utf-8");
-      (db as any)._last_backup_at = now.toISOString();
+    if (!isVercel && !isNetlify) {
+      const data = JSON.stringify(db, null, 2);
       
-      const files = (await fs.promises.readdir(BACKUP_DIR)).sort();
-      if (files.length > 7) {
-        for (const f of files.slice(0, files.length - 7)) {
-          await fs.promises.unlink(path.join(BACKUP_DIR, f));
+      // Async file write to keep the event loop free
+      await fs.promises.mkdir(path.dirname(DB_FILE), { recursive: true });
+      await fs.promises.writeFile(DB_FILE, data, "utf-8");
+      
+      // Skip backups for very large databases to save disk space and time
+      const isVeryLarge = data.length > 50 * 1024 * 1024; // 50MB
+      const now = new Date();
+      const lastBackup = (db as any)._last_backup_at;
+      if (!isVeryLarge && (!lastBackup || now.getTime() - new Date(lastBackup).getTime() > 24 * 60 * 60 * 1000)) {
+        await fs.promises.mkdir(BACKUP_DIR, { recursive: true });
+        const backupFile = path.join(BACKUP_DIR, `db_${now.toISOString().replace(/[:.]/g, "-")}.json`);
+        await fs.promises.writeFile(backupFile, data, "utf-8");
+        (db as any)._last_backup_at = now.toISOString();
+        
+        const files = (await fs.promises.readdir(BACKUP_DIR)).sort();
+        if (files.length > 7) {
+          for (const f of files.slice(0, files.length - 7)) {
+            await fs.promises.unlink(path.join(BACKUP_DIR, f));
+          }
         }
       }
     }
   } catch (err) {
-    // Save failed
+    // Ignore errors from FS operations on serverless platforms
+    console.warn("Database file save failed (safe to ignore on serverless platforms)", err);
   } finally {
     isSaving = false;
     saveToBlobsAsync(db);

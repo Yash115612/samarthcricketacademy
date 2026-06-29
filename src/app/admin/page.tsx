@@ -44,7 +44,13 @@ export default function AdminDashboard() {
     const liveMatches = allMatches.filter(m => m.status === "Live");
     const upcomingMatches = allMatches.filter(m => m.status === "Upcoming");
 
-    const branchSettings = settings.get(branchId);
+    const branchSettings = settings.get(branchId) || {
+      total_pt_slots: 10,
+      used_pt_slots: 0,
+      payment_qr_url: "",
+      payment_upi_id: "",
+      payment_instructions: []
+    };
 
     dashboardData = {
       totalPlayersCount,
