@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #1A1A1A;
+  --foreground: #FFFFFF;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    /* smooth scroll only on desktop to avoid iOS momentum conflicts */
+    scroll-behavior: auto;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    @apply text-foreground bg-background font-sans;
+    overflow-x: hidden;
+  }
+
+  /* Remove 300ms tap delay on all interactive elements */
+  a, button, [role="button"], input, select, textarea, label {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .btn-primary {
+    @apply bg-academy-red text-white px-6 py-2 rounded-md hover:opacity-90 transition-opacity font-semibold;
+  }
+  .btn-secondary {
+    @apply bg-academy-gold text-academy-dark px-6 py-2 rounded-md hover:opacity-90 transition-opacity font-semibold;
+  }
+  .card {
+    @apply bg-academy-gray border border-white/10 rounded-xl overflow-hidden shadow-lg;
+  }
+}
+
+/*
+ * MOBILE PERFORMANCE: backdrop-blur is extremely expensive on mobile GPUs.
+ * Disable all backdrop-filter on screens < 1024px and make semi-transparent
+ * backgrounds solid so content remains readable without the blur.
+ */
+@media (max-width: 1023px) {
+  /* Kill all backdrop blur */
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Kill expensive CSS blur filter blobs (hero section glow effects) */
+  [class*="blur-["] {
+    filter: none !important;
+  }
+
+  /* Make formerly semi-transparent card backgrounds solid */
+  .bg-academy-gray\/30,
+  .bg-academy-gray\/50 {
+    background-color: #2D2D2D !important;
+  }
+
+  /* Keep modal overlays dark but solid */
+  .bg-academy-dark\/60,
+  .bg-academy-dark\/90 {
+    background-color: rgba(26, 26, 26, 0.97) !important;
+  }
+
+  .bg-academy-dark\/80 {
+    background-color: rgba(26, 26, 26, 0.95) !important;
+  }
+
+  /* Respect reduced-motion preference globally */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* On all screens, respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+@keyframes gallery-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="gallery-scroll"] {
+    animation: none !important;
+  }
+}

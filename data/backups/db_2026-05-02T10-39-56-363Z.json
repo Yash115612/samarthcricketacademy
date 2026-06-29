@@ -1,0 +1,219 @@
+{
+  "branches": [
+    {
+      "id": "samarth",
+      "name": "Samarth Cricket Academy",
+      "address": "Samarth Cricket Academy, Mira Bhayander, Mumbai - 401107",
+      "city": "Mira Bhayander, Mumbai",
+      "phone": "+91 98765 43210",
+      "email": "info@samarthcricket.com",
+      "status": "Active",
+      "google_maps_link": "https://maps.google.com",
+      "description": "Main branch of Samarth Cricket Academy in Mira Bhayander, Mumbai.",
+      "head_coach": "",
+      "established": "2011"
+    },
+    {
+      "id": "aims",
+      "name": "AIMS Academy",
+      "address": "AIMS Sports Complex, Mumbai, Maharashtra",
+      "city": "Mumbai",
+      "phone": "+91 91234 56789",
+      "email": "aims@samarthcricket.com",
+      "status": "Active",
+      "google_maps_link": "https://maps.google.com",
+      "description": "Second branch of Samarth Cricket Academy in Mumbai.",
+      "head_coach": "",
+      "established": "2015"
+    }
+  ],
+  "users": [
+    {
+      "id": "a1",
+      "name": "Admin",
+      "email": "admin@samarth.com",
+      "phone": "",
+      "branch_id": "samarth",
+      "role": "admin",
+      "experience": null,
+      "isProfileComplete": true,
+      "passwordHash": "$2b$12$TI3DijDMtnaI/5yvV2mwLeou8ISJNpArBBcaOfLlxJP/smwpk8dQ.",
+      "membership_status": "active"
+    },
+    {
+      "id": "p1",
+      "name": "Player One",
+      "email": "player@samarth.com",
+      "phone": "9999999999",
+      "branch_id": "samarth",
+      "batch_id": "morning",
+      "role": "player",
+      "experience": "Intermediate",
+      "isProfileComplete": true,
+      "passwordHash": "$2b$12$4EpIVf7IMTqZHPp6ui38R.MwzitntGBv/B.XAQhQSjmwte01I2Uzq",
+      "membership_status": "active"
+    }
+  ],
+  "staff": [],
+  "memberships": [],
+  "matches": [],
+  "match_participants": [],
+  "performance": [],
+  "attendance": [],
+  "staff_attendance": [],
+  "notices": [],
+  "payments": [],
+  "payment_verifications": [],
+  "enquiries": [],
+  "transactions": [],
+  "plans": [
+    {
+      "id": "monthly",
+      "name": "2 Months Plan",
+      "price": 5000,
+      "duration_days": 60,
+      "duration_label": "2 Months",
+      "features": [
+        "Full academy training (basic to advanced)",
+        "Group practice sessions",
+        "Match participation",
+        "Attendance tracking",
+        "Performance tracking"
+      ],
+      "type": "monthly"
+    },
+    {
+      "id": "pt",
+      "name": "Personal Training",
+      "price": 0,
+      "duration_days": 30,
+      "duration_label": "Contact Base",
+      "features": [
+        "One-to-one coaching (coach + player only)",
+        "Personalized training sessions",
+        "No group practice",
+        "Premium styling & badge",
+        "Dedicated coach support"
+      ],
+      "type": "pt"
+    }
+  ],
+  "settings": {
+    "samarth": {
+      "total_pt_slots": 10,
+      "used_pt_slots": 0,
+      "payment_qr_url": "/qr-code.svg",
+      "payment_upi_id": "academy@upi",
+      "payment_instructions": [
+        "Scan the QR code using any UPI app",
+        "Pay the required amount for your selected plan",
+        "Note the UTR / Transaction Reference Number",
+        "Take a screenshot of the payment confirmation",
+        "Fill the form and upload your screenshot",
+        "Wait for admin approval to activate your account"
+      ]
+    },
+    "aims": {
+      "total_pt_slots": 15,
+      "used_pt_slots": 0,
+      "payment_qr_url": "/qr-code.svg",
+      "payment_upi_id": "aims@upi",
+      "payment_instructions": [
+        "Scan the QR code using any UPI app",
+        "Pay the required amount for your selected plan",
+        "Note the UTR / Transaction Reference Number",
+        "Take a screenshot of the payment confirmation",
+        "Fill the form and upload your screenshot",
+        "Wait for admin approval to activate your account"
+      ]
+    }
+  },
+  "scoring_sessions": [],
+  "balls": [],
+  "site_settings": {
+    "players_trained": "0+",
+    "tournament_wins": "0+",
+    "certified_coaches": "0+",
+    "matches_played": "0+",
+    "academy_name": "Samarth Cricket Academy",
+    "academy_description": "Professional cricket coaching developing disciplined, skilled, and confident cricketers.",
+    "facebook_url": "",
+    "instagram_url": "",
+    "twitter_url": "",
+    "address": "",
+    "google_maps_link": "",
+    "phone": "",
+    "email": "info@samarthcricket.com",
+    "hero_slides": [
+      {
+        "id": "hs1",
+        "img": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "tag": "Professional Cricket Coaching",
+        "title": "WHERE CHAMPIONS",
+        "accent": "ARE FORGED",
+        "sub": "Mira Bhayander's Premier Cricket Academy — building champions since 2011."
+      },
+      {
+        "id": "hs2",
+        "img": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e",
+        "tag": "Match Exposure",
+        "title": "COMPETE AT",
+        "accent": "EVERY LEVEL",
+        "sub": "From local tournaments to state competitions — real match experience every season."
+      },
+      {
+        "id": "hs3",
+        "img": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "tag": "Elite Training Facilities",
+        "title": "TRAIN LIKE",
+        "accent": "A PRO",
+        "sub": "International-grade turf pitches, video analysis, and certified coaches."
+      }
+    ],
+    "gallery_images": [
+      {
+        "id": "gi1",
+        "src": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "alt": "Cricket Stadium"
+      },
+      {
+        "id": "gi2",
+        "src": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e",
+        "alt": "Match Action"
+      },
+      {
+        "id": "gi3",
+        "src": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "alt": "Net Practice"
+      },
+      {
+        "id": "gi4",
+        "src": "https://images.unsplash.com/photo-1593341646782-e0b495cff86d",
+        "alt": "Victory Celebration"
+      },
+      {
+        "id": "gi5",
+        "src": "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972",
+        "alt": "Cricket Ground"
+      },
+      {
+        "id": "gi6",
+        "src": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "alt": "Stadium Lights"
+      },
+      {
+        "id": "gi7",
+        "src": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e",
+        "alt": "Batting"
+      },
+      {
+        "id": "gi8",
+        "src": "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+        "alt": "Bowling Practice"
+      }
+    ],
+    "homepage_videos": []
+  },
+  "notifications": [],
+  "products": []
+}
