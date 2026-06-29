@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
 import { UserSquare, Shield, Phone, Plus, Search, Star, X, Save, Calendar, CheckCircle, XCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -48,7 +48,7 @@ export default function StaffPage() {
     }
   };
 
-  const loadAttendance = async () => {
+  const loadAttendance = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/staff/attendance?date=${attendanceDate}`);
@@ -65,7 +65,7 @@ export default function StaffPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [attendanceDate]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -75,7 +75,7 @@ export default function StaffPage() {
       loadAttendance();
     }
     return () => controller.abort();
-  }, [currentBranchId, activeTab, attendanceDate]);
+  }, [currentBranchId, activeTab, loadAttendance]);
 
   const handleMarkAttendance = (staffId: string, status: "Present" | "Absent") => {
     setAttendanceRecords((prev) => ({

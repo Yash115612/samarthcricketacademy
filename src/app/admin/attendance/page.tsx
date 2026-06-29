@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
 import { Calendar, CheckCircle, XCircle, Save, Search, Filter, Clock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -20,7 +20,7 @@ export default function AttendancePage() {
   const [filter, setFilter] = useState<"all" | "Present" | "Absent" | "unmarked">("all");
   const [selectedBatch, setSelectedBatch] = useState<string>("all");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/attendance?date=${date}`);
@@ -39,11 +39,11 @@ export default function AttendancePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date]);
 
   useEffect(() => {
     loadData();
-  }, [date, currentBranchId]);
+  }, [loadData, currentBranchId]);
 
   const handleMark = (userId: string, status: "Present" | "Absent") => {
     setAttendanceRecords((prev) => ({

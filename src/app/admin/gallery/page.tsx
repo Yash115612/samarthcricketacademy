@@ -146,11 +146,13 @@ export default function GalleryPage() {
             <Card key={item.id} className="group overflow-hidden border-white/5 bg-academy-gray/30 backdrop-blur-md rounded-[2rem] break-inside-avoid mb-8">
               <div className="relative overflow-hidden bg-black/20">
                 {/* Auto-frame Image Container */}
-                <img 
-                  src={item.src} 
-                  alt={item.alt} 
-                  className="w-full h-auto block transition-transform duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0" 
-                />
+                <Image
+                    src={item.src}
+                    alt={item.alt}
+                    width={300}
+                    height={200}
+                    className="w-full h-auto block transition-transform duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0"
+                  />
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-academy-dark/80 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-40"></div>
                 
@@ -214,7 +216,12 @@ export default function GalleryPage() {
                 </label>
                 {formData.src ? (
                   <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                    <img src={formData.src} alt="Preview" className="w-full h-full object-cover" />
+                    <Image 
+                      src={formData.src} 
+                      alt="Preview" 
+                      fill 
+                      className="object-cover"
+                    />
                     <div className="absolute inset-0 bg-academy-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                       <label className="p-3 bg-white text-academy-dark rounded-xl cursor-pointer hover:scale-110 transition-transform">
                         <Upload size={18} />

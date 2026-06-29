@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Star, Shield, Award, Users, Target, Activity, MapPin, ChevronDown, X, Phone, Mail, Calendar } from "lucide-react";
+import { Star, Shield, Award, Users, Target, Activity, MapPin, ChevronDown, X, Phone, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";

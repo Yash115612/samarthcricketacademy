@@ -125,10 +125,13 @@ export default function GalleryPage() {
                   onClick={() => setLightbox(item.id)}
                   className="relative group overflow-hidden rounded-[1.5rem] border border-white/8 cursor-pointer transition-all duration-500 hover:border-academy-gold/40 break-inside-avoid mb-5"
                 >
-                  <img
+                  <Image
                     src={item.url}
                     alt={item.title}
+                    width={600}
+                    height={400}
                     className="w-full h-auto block grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                    style={{ aspectRatio: "3/2", objectFit: "cover" }}
                   />
 
                   {/* Overlay gradient */}

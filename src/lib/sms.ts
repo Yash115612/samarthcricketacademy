@@ -16,6 +16,8 @@ export async function sendSMS(phone: string, message: string) {
 
 async function sendMsg91(phone: string, message: string) {
   try {
+    const API_KEY = process.env.MSG91_AUTH_KEY || "";
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
       method: 'POST',
       headers: {
