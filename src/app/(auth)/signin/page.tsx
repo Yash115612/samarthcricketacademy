@@ -46,12 +46,20 @@ export default function SignInPage() {
 
   // Redirect if already logged in (only after client-side mount to prevent hydration loop)
   useEffect(() => {
-    if (!mounted) return;
-    if (status !== "authenticated") return;
+    if (!mounted || status !== "authenticated") return;
+
     const params = new URLSearchParams(window.location.search);
     if (params.has("error")) return;
-    const dest = session?.user?.role === "admin" ? "/admin" : "/dashboard";
-    window.location.replace(dest);
+
+    const callbackUrl = params.get("callbackUrl");
+    const dest = callbackUrl
+      ? callbackUrl
+      : session?.user?.role === "admin"
+      ? "/admin"
+      : "/dashboard";
+
+    // Use replace for clean redirect
+    router.replace(dest);
   }, [mounted, status, router, session?.user?.role]);
 
   const callbackUrl =

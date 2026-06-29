@@ -19,9 +19,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { data: session, status, update } = useSession();
   const router = useRouter();
 
-  // Only "loading" on the very first check — not during re-validates.
-  // session is undefined before the first check, null when unauthenticated, or a Session object.
-  const isLoading = status === "loading" && session === undefined;
+  // isLoading is exactly when NextAuth is still fetching the session
+  const isLoading = status === "loading";
 
   const updateRef = useRef(update);
   updateRef.current = update;
