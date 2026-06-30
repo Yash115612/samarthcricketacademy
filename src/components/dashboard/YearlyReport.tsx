@@ -33,28 +33,28 @@ export const YearlyReport: React.FC<YearlyReportProps> = ({ report }) => {
 
   return (
     <Card
-      className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-6 min-w-0 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+      className="border-white/5 bg-academy-gray/30 backdrop-blur-md p-8 min-w-0 overflow-hidden"
       role="region"
       aria-labelledby="yearly-report-title"
     >
       <h2
         id="yearly-report-title"
-        className="text-lg font-black uppercase tracking-tight mb-5 flex items-center gap-3 text-white"
+        className="text-lg font-black uppercase tracking-tight mb-6 flex items-center gap-3 text-white"
       >
         <BarChart2 className="text-academy-red" size={18} aria-hidden="true" />
         {report.year} Yearly Report
       </h2>
 
       {/* Summary row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Matches", value: report.matches_played },
           { label: "Total Runs", value: report.total_runs },
           { label: "Wickets", value: report.total_wickets },
           { label: "Attendance", value: `${report.attendance.percentage}%` },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white/5 rounded-xl p-3 text-center">
-            <p className="text-xl font-black text-academy-gold">{stat.value}</p>
+          <div key={stat.label} className="bg-white/5 rounded-2xl p-4 text-center">
+            <p className="text-2xl font-black text-academy-gold">{stat.value}</p>
             <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mt-1">
               {stat.label}
             </p>
@@ -68,7 +68,7 @@ export const YearlyReport: React.FC<YearlyReportProps> = ({ report }) => {
           <p className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-3">
             Runs per Month
           </p>
-          <div className="flex items-end gap-2 h-20 mb-5">
+          <div className="flex items-end gap-2 h-20 mb-6">
             {report.months.map((m) => {
               const monthSuffix = m.month?.slice(5) ?? "";
               const monthLabel = MONTH_LABELS[monthSuffix] ?? monthSuffix;
@@ -123,11 +123,9 @@ export const YearlyReport: React.FC<YearlyReportProps> = ({ report }) => {
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <p className="text-[11px] text-gray-400 font-medium">
-            No data recorded for {report.year} yet
-          </p>
-        </div>
+        <p className="text-[11px] text-gray-500 font-medium text-center py-4">
+          No data recorded for {report.year} yet.
+        </p>
       )}
     </Card>
   );

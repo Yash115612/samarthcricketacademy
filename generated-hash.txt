@@ -1,0 +1,14 @@
+Password Hash: $2b$12$DqCT/JnevCPjqr.pcrRWa.S6IMGEwSom6/NsOgIqAo2g5OYobi3sC
+
+SQL INSERT Statement:
+INSERT INTO users (id, email, name, role, branch_id, is_profile_complete, membership_status, password_hash)
+VALUES (
+  '69f6a0ca-f043-4a64-bc63-6eed7f6a4ff6', 
+  'samarth@admin.com', 
+  'Admin', 
+  'admin', 
+  'samarth', 
+  true, 
+  'active', 
+  '$2b$12$DqCT/JnevCPjqr.pcrRWa.S6IMGEwSom6/NsOgIqAo2g5OYobi3sC'
+);

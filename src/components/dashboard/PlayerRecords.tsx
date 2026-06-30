@@ -38,9 +38,9 @@ export const PlayerRecords: React.FC<PlayerRecordsProps> = ({ matchHistory, stat
   ];
 
   return (
-    <Link href="/dashboard/records" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold rounded-2xl h-full">
+    <Link href="/dashboard/records" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold rounded-2xl">
       <Card
-        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-gold/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)] h-full rounded-2xl"
+        className="border-white/5 bg-academy-gray/30 backdrop-blur-md p-4 flex flex-col gap-3 hover:border-academy-gold/40 transition-all cursor-pointer"
         role="region"
         aria-labelledby="records-title"
       >
@@ -48,7 +48,7 @@ export const PlayerRecords: React.FC<PlayerRecordsProps> = ({ matchHistory, stat
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="text-academy-gold shrink-0" size={14} aria-hidden="true" />
-            <h2 id="records-title" className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
+            <h2 id="records-title" className="text-[10px] font-black uppercase tracking-widest text-white">
               Player Records
             </h2>
           </div>
@@ -56,12 +56,12 @@ export const PlayerRecords: React.FC<PlayerRecordsProps> = ({ matchHistory, stat
         </div>
 
         {/* 2×2 stat grid */}
-        <div className="grid grid-cols-2 gap-2 flex-grow">
+        <div className="grid grid-cols-2 gap-2">
           {records.map((rec) => (
-            <div key={rec.label} className="bg-white/5 rounded-xl p-3 text-center">
+            <div key={rec.label} className="bg-white/5 rounded-xl p-2.5 text-center">
               <p className="text-lg font-black text-academy-gold leading-none">{rec.value}</p>
-              <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mt-1">{rec.sub}</p>
-              <p className="text-[8px] font-bold text-gray-600 mt-1">{rec.label}</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mt-0.5">{rec.sub}</p>
+              <p className="text-[8px] font-bold text-gray-600 mt-0.5">{rec.label}</p>
             </div>
           ))}
         </div>

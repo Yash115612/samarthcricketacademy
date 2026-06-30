@@ -17,29 +17,59 @@ import { useAuth } from "@/context/AuthContext";
 import { AdminBranchProvider, useAdminBranch } from "@/context/AdminBranchContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 
-const SIDEBAR_LINKS = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Homepage Media", href: "/admin/homepage", icon: Home },
-  { label: "Branches", href: "/admin/branches", icon: Globe },
-  { label: "Clients", href: "/admin/clients", icon: Users },
-  { label: "Membership", href: "/admin/membership", icon: CreditCard },
-  { label: "Payments", href: "/admin/payments", icon: BadgeCheck },
-  { label: "Enquiries", href: "/admin/enquiries", icon: MessageSquare },
-  { label: "Staff", href: "/admin/staff", icon: UserSquare },
-  { label: "Coaches", href: "/admin/coaches", icon: Trophy },
-  { label: "Matches", href: "/admin/matches", icon: Trophy },
-  { label: "Player Records", href: "/admin/records", icon: BarChart3 },
-  { label: "Batches", href: "/admin/batches", icon: Clock },
-  { label: "Attendance", href: "/admin/attendance", icon: CalendarCheck },
-  { label: "Gallery", href: "/admin/gallery", icon: ImageIcon },
-  { label: "Birthdays", href: "/admin/birthdays", icon: Gift },
-  { label: "Notices", href: "/admin/notices", icon: Bell },
-  { label: "Shop", href: "/admin/shop", icon: ShoppingBag },
-  { label: "Reports", href: "/admin/reports", icon: BarChart3 },
-  { label: "Social Media", href: "/admin/social", icon: Share2 },
-  { label: "Personal Training", href: "/admin/pt", icon: Target },
-  { label: "Finance", href: "/admin/finance", icon: Wallet },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+const SIDEBAR_GROUPS = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard }
+    ]
+  },
+  {
+    label: "People",
+    items: [
+      { label: "Clients", href: "/admin/clients", icon: Users },
+      { label: "Staff", href: "/admin/staff", icon: UserSquare },
+      { label: "Coaches", href: "/admin/coaches", icon: Trophy }
+    ]
+  },
+  {
+    label: "Academy",
+    items: [
+      { label: "Branches", href: "/admin/branches", icon: Globe },
+      { label: "Batches", href: "/admin/batches", icon: Clock },
+      { label: "Matches", href: "/admin/matches", icon: Trophy },
+      { label: "Attendance", href: "/admin/attendance", icon: CalendarCheck },
+      { label: "Player Records", href: "/admin/records", icon: BarChart3 },
+      { label: "Personal Training", href: "/admin/pt", icon: Target }
+    ]
+  },
+  {
+    label: "Business",
+    items: [
+      { label: "Membership", href: "/admin/membership", icon: CreditCard },
+      { label: "Payments", href: "/admin/payments", icon: BadgeCheck },
+      { label: "Finance", href: "/admin/finance", icon: Wallet },
+      { label: "Enquiries", href: "/admin/enquiries", icon: MessageSquare }
+    ]
+  },
+  {
+    label: "Content",
+    items: [
+      { label: "Homepage Media", href: "/admin/homepage", icon: Home },
+      { label: "Gallery", href: "/admin/gallery", icon: ImageIcon },
+      { label: "Notices", href: "/admin/notices", icon: Bell },
+      { label: "Social Media", href: "/admin/social", icon: Share2 },
+      { label: "Birthdays", href: "/admin/birthdays", icon: Gift },
+      { label: "Shop", href: "/admin/shop", icon: ShoppingBag }
+    ]
+  },
+  {
+    label: "Reports",
+    items: [
+      { label: "Reports", href: "/admin/reports", icon: BarChart3 },
+      { label: "Settings", href: "/admin/settings", icon: Settings }
+    ]
+  }
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -144,29 +174,38 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-            <div className="space-y-1">
-              {SIDEBAR_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => { if (window.innerWidth < 1024) setSidebarOpen(false); }}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all group relative overflow-hidden",
-                    pathname === link.href 
-                      ? "text-white bg-white/10" 
-                      : "text-gray-500 hover:text-white hover:bg-white/5"
-                  )}
-                >
-                  <div className={cn(
-                    "absolute left-0 top-0 bottom-0 w-1 bg-academy-red transition-transform duration-300",
-                    pathname === link.href ? "translate-x-0" : "-translate-x-full group-hover:translate-x-0"
-                  )} />
-                  <link.icon size={18} className={cn(
-                    "transition-colors",
-                    pathname === link.href ? "text-academy-gold" : "group-hover:text-academy-gold"
-                  )} />
-                  {link.label}
-                </Link>
+            <div className="space-y-6">
+              {SIDEBAR_GROUPS.map((group) => (
+                <div key={group.label} className="space-y-1">
+                  <div className="px-4 py-1">
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-600">
+                      {group.label}
+                    </span>
+                  </div>
+                  {group.items.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => { if (window.innerWidth < 1024) setSidebarOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all group relative overflow-hidden",
+                        pathname === link.href 
+                          ? "text-white bg-white/10" 
+                          : "text-gray-500 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute left-0 top-0 bottom-0 w-1 bg-academy-red transition-transform duration-300",
+                        pathname === link.href ? "translate-x-0" : "-translate-x-full group-hover:translate-x-0"
+                      )} />
+                      <link.icon size={18} className={cn(
+                        "transition-colors",
+                        pathname === link.href ? "text-academy-gold" : "group-hover:text-academy-gold"
+                      )} />
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
           </nav>

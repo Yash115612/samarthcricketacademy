@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, ChevronRight, Megaphone } from "lucide-react";
+import { Bell, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Notice } from "@/types/dashboard";
 import { cn } from "@/lib/utils";
@@ -11,9 +11,9 @@ interface NoticeBoardProps {
 
 export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
   return (
-    <Link href="/dashboard/notices" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-red rounded-2xl h-full">
+    <Link href="/dashboard/notices" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-red rounded-2xl">
       <Card
-        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-red/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)] h-full rounded-2xl"
+        className="border-white/5 bg-academy-gray/30 backdrop-blur-md p-4 flex flex-col gap-3 hover:border-academy-red/40 transition-all cursor-pointer"
         role="region"
         aria-labelledby="notices-title"
       >
@@ -21,7 +21,7 @@ export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="text-academy-red shrink-0" size={14} aria-hidden="true" />
-            <h2 id="notices-title" className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
+            <h2 id="notices-title" className="text-[10px] font-black uppercase tracking-widest text-white">
               Notices
             </h2>
           </div>
@@ -29,12 +29,9 @@ export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
         </div>
 
         {notices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4 text-center flex-grow">
-            <Megaphone className="text-academy-red/50 mb-2" size={20} />
-            <p className="text-[10px] text-gray-400 font-medium">No notices yet</p>
-          </div>
+          <p className="text-[10px] text-gray-500 font-medium">No notices yet.</p>
         ) : (
-          <div className="flex flex-col gap-3 max-h-44 overflow-hidden flex-grow">
+          <div className="flex flex-col gap-3 max-h-44 overflow-hidden">
             {notices.slice(0, 3).map((notice) => (
               <article key={notice.id} className="flex flex-col gap-0.5 pl-3 relative">
                 <div
@@ -62,7 +59,7 @@ export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
               </article>
             ))}
             {notices.length > 3 && (
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-academy-red">
+              <p className="text-[9px] font-black uppercase tracking-widest text-academy-red">
                 +{notices.length - 3} more
               </p>
             )}

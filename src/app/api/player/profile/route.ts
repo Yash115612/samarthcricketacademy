@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+import { users } from "@/server/db/inMemoryDb";
 
 const isValidBranch = (branchId: unknown): branchId is "samarth" | "aims" => branchId === "samarth" || branchId === "aims";
 
@@ -16,16 +10,7 @@ export async function GET() {
   const userId = session?.user?.user_id;
   if (!userId) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 
-  const { data: user, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Supabase GET profile error:", error);
-    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
-  }
+  const user = users.getById(userId);
   if (!user) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 
   return NextResponse.json({
@@ -38,7 +23,7 @@ export async function GET() {
       branch_id: user.branch_id,
       role: user.role,
       experience: user.experience,
-      isProfileComplete: user.is_profile_complete,
+      isProfileComplete: user.isProfileComplete,
     },
   });
 }
@@ -48,17 +33,8 @@ export async function PUT(req: Request) {
   const userId = session?.user?.user_id;
   if (!userId) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 
-  const { data: existingUser, error: fetchErr } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (fetchErr) {
-    console.error("Supabase fetch user error:", fetchErr);
-    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
-  }
-  if (!existingUser) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+  const user = users.getById(userId);
+  if (!user) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 
   const body = (await req.json().catch(() => null)) as
     | { name?: unknown; phone?: unknown; experience?: unknown; branch_id?: unknown; complete?: unknown }
@@ -66,7 +42,7 @@ export async function PUT(req: Request) {
 
   if (!body) return NextResponse.json({ ok: false, error: "INVALID_JSON" }, { status: 400 });
 
-  const patch: { name?: string; phone?: string; experience?: string | null; branch_id?: "samarth" | "aims" | null; is_profile_complete?: boolean } = {};
+  const patch: { name?: string; phone?: string; experience?: string | null; branch_id?: "samarth" | "aims" | null; isProfileComplete?: boolean } = {};
 
   if (typeof body.name === "string") {
     const name = body.name.trim();
@@ -87,39 +63,26 @@ export async function PUT(req: Request) {
 
   if (body.branch_id !== undefined) {
     if (!isValidBranch(body.branch_id)) return NextResponse.json({ ok: false, error: "BRANCH_INVALID" }, { status: 400 });
-    if (existingUser.branch_id && existingUser.branch_id !== body.branch_id) return NextResponse.json({ ok: false, error: "BRANCH_LOCKED" }, { status: 403 });
+    if (user.branch_id && user.branch_id !== body.branch_id) return NextResponse.json({ ok: false, error: "BRANCH_LOCKED" }, { status: 403 });
     patch.branch_id = body.branch_id;
   }
 
-  if (body.complete === true) patch.is_profile_complete = true;
+  if (body.complete === true) patch.isProfileComplete = true;
 
-  const { data: updatedUser, error: updateErr } = await supabase
-    .from("users")
-    .update(patch)
-    .eq("id", userId)
-    .select()
-    .single();
-
-  if (updateErr) {
-    console.error("Supabase update profile error:", updateErr);
-    return NextResponse.json({ ok: false, error: "UPDATE_FAILED" }, { status: 500 });
-  }
-  if (!updatedUser) {
-    console.error("Supabase update returned no data");
-    return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
-  }
+  const updated = users.updateProfile(userId, patch);
+  if (!updated) return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
 
   return NextResponse.json({
     ok: true,
     user: {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-      branch_id: updatedUser.branch_id,
-      role: updatedUser.role,
-      experience: updatedUser.experience,
-      isProfileComplete: updatedUser.is_profile_complete,
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      phone: updated.phone,
+      branch_id: updated.branch_id,
+      role: updated.role,
+      experience: updated.experience,
+      isProfileComplete: updated.isProfileComplete,
     },
   });
 }
