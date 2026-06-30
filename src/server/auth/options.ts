@@ -3,23 +3,27 @@ import "server-only";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { users } from "@/server/db/inMemoryDb";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-// Consistent fallback so the app works on Netlify even without NEXTAUTH_SECRET set.
-// Override this with your own secret in Netlify environment variables.
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
+
 const NEXTAUTH_SECRET =
   process.env.NEXTAUTH_SECRET || "SCA-nextauth-fallback-secret-change-in-production-env";
-
 const isProd = process.env.NODE_ENV === "production";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
   providers: [
-    // ── Admin: email + password ────────────────────────────────────────────
+    // Admin login using credentials
     CredentialsProvider({
       id: "admin-credentials",
       name: "Admin Credentials",
@@ -32,10 +36,9 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password ?? "";
         if (!email || !password) return null;
 
-        // Allow env-var override for admin credentials (useful on Netlify)
+        // First check env vars for admin
         const envAdminEmail = (process.env.ADMIN_EMAIL ?? "").toLowerCase();
         const envAdminPassword = process.env.ADMIN_PASSWORD ?? "";
-
         if (envAdminEmail && envAdminPassword) {
           if (email === envAdminEmail && password === envAdminPassword) {
             return {
@@ -50,23 +53,32 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const admin = users.getAdminByEmail(email);
-        if (!admin) return null;
-        if (!users.verifyPassword(admin, password)) return null;
+        // Now check Supabase
+        const { data: adminUser } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (!adminUser || !adminUser.password_hash) return null;
+
+        const passwordValid = await bcrypt.compare(password, adminUser.password_hash);
+        if (!passwordValid) return null;
 
         return {
-          id: admin.id,
-          name: admin.name,
-          email: admin.email,
-          role: admin.role,
-          branch_id: admin.branch_id,
-          isProfileComplete: admin.isProfileComplete,
-          membership_status: admin.membership_status,
+          id: adminUser.id,
+          name: adminUser.name,
+          email: adminUser.email,
+          role: adminUser.role,
+          branch_id: adminUser.branch_id,
+          isProfileComplete: adminUser.is_profile_complete,
+          membership_status: adminUser.membership_status,
         } as any;
       },
     }),
 
-    // ── Players: email + password ──────────────────────────────────────────
+    // Player login using credentials
     CredentialsProvider({
       id: "credentials",
       name: "Email Credentials",
@@ -79,9 +91,16 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password ?? "";
         if (!email || !password) return null;
 
-        const player = users.getByEmailAnyBranch(email);
-        if (!player || player.role !== "player") return null;
-        if (!users.verifyPassword(player, password)) return null;
+        const { data: player } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (!player || player.role !== "player" || !player.password_hash) return null;
+
+        const passwordValid = await bcrypt.compare(password, player.password_hash);
+        if (!passwordValid) return null;
 
         return {
           id: player.id,
@@ -89,38 +108,84 @@ export const authOptions: NextAuthOptions = {
           email: player.email,
           role: player.role,
           branch_id: player.branch_id,
-          isProfileComplete: player.isProfileComplete,
+          isProfileComplete: player.is_profile_complete,
           membership_status: player.membership_status,
         } as any;
       },
     }),
 
-    // ── Google OAuth ───────────────────────────────────────────────────────
     ...(googleClientId && googleClientSecret
-      ? [GoogleProvider({ clientId: googleClientId, clientSecret: googleClientSecret })]
+      ? [
+          GoogleProvider({
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+          }),
+        ]
       : []),
   ],
 
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        // Security: Ensure email is verified by Google
         if (!(profile as any)?.email_verified) return false;
-
         const email = user.email?.toLowerCase();
         if (!email) return false;
-        const dbUser = users.upsertOAuthUser({ id: user.id, email, name: user.name });
-        (user as any).id = dbUser.id;
-        (user as any).role = dbUser.role;
-        (user as any).branch_id = dbUser.branch_id;
-        (user as any).isProfileComplete = dbUser.isProfileComplete;
-        (user as any).membership_status = dbUser.membership_status;
+
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (existingUser) {
+          // Update google id if needed
+          if (!existingUser.google_id) {
+            await supabase
+              .from("users")
+              .update({ google_id: user.id })
+              .eq("id", existingUser.id);
+          }
+          // Populate user object with existing data
+          (user as any).id = existingUser.id;
+          (user as any).role = existingUser.role;
+          (user as any).branch_id = existingUser.branch_id;
+          (user as any).isProfileComplete = existingUser.is_profile_complete;
+          (user as any).membership_status = existingUser.membership_status;
+          return true;
+        }
+
+        // Create new user in Supabase
+        const { data: newUser, error } = await supabase
+          .from("users")
+          .insert({
+            name: user.name || email.split("@")[0],
+            email,
+            google_id: user.id,
+            role: "player",
+            branch_id: "samarth",
+            membership_status: "none",
+            is_profile_complete: false,
+          })
+          .select()
+          .single();
+
+        if (error || !newUser) {
+          console.error("Error creating user in Supabase:", error);
+          return false;
+        }
+
+        (user as any).id = newUser.id;
+        (user as any).role = newUser.role;
+        (user as any).branch_id = newUser.branch_id;
+        (user as any).isProfileComplete = newUser.is_profile_complete;
+        (user as any).membership_status = newUser.membership_status;
       }
       return true;
     },
 
     async jwt({ token, user }) {
       if (user) {
+        // Initial login, use user object
         const userId = (user as any).id ?? token.sub;
         token.sub = userId;
         token.user_id = userId;
@@ -133,15 +198,18 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
+      // Subsequent requests: fetch fresh from Supabase
       const rawId = (token.user_id as string | undefined) ?? (token.sub as string | undefined);
       if (rawId) {
-        const dbUser = users.getById(rawId);
+        const { data: dbUser } = await supabase.from("users").select("*").eq("id", rawId).maybeSingle();
         if (dbUser) {
           token.membership_status = dbUser.membership_status;
           token.name = dbUser.name;
+          token.branch_id = dbUser.branch_id;
+          token.isProfileComplete = dbUser.is_profile_complete;
+          token.role = dbUser.role;
         }
       }
-
       return token;
     },
 
@@ -165,36 +233,20 @@ export const authOptions: NextAuthOptions = {
   },
 
   secret: NEXTAUTH_SECRET,
-
   useSecureCookies: isProd,
 
   cookies: {
     sessionToken: {
       name: `${isProd ? "__Secure-" : ""}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "strict", // High security
-        path: "/",
-        secure: isProd,
-      },
+      options: { httpOnly: true, sameSite: "strict", path: "/", secure: isProd },
     },
     callbackUrl: {
       name: `${isProd ? "__Secure-" : ""}next-auth.callback-url`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax", // Lax is needed for OAuth callbacks
-        path: "/",
-        secure: isProd,
-      },
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: isProd },
     },
     csrfToken: {
       name: `${isProd ? "__Host-" : ""}next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "strict",
-        path: "/",
-        secure: isProd,
-      },
+      options: { httpOnly: true, sameSite: "strict", path: "/", secure: isProd },
     },
   },
 };
