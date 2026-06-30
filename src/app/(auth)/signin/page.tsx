@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -11,7 +11,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { signIn, useSession } from "next-auth/react";
 
-type LoginTab = "player" | "admin";
+type LoginTab = "player" | "staff";
 
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   NO_MEMBERSHIP: "No approved membership found for this Google account. Please apply for membership first.",
@@ -33,9 +33,9 @@ export default function SignInPage() {
   const [playerEmail, setPlayerEmail] = useState("");
   const [playerPassword, setPlayerPassword] = useState("");
 
-  // Admin state
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  // Staff state
+  const [staffEmail, setStaffEmail] = useState("");
+  const [staffPassword, setStaffPassword] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,6 +56,8 @@ export default function SignInPage() {
       ? callbackUrl
       : session?.user?.role === "admin"
       ? "/admin"
+      : session?.user?.role === "staff"
+      ? "/staff"
       : "/dashboard";
 
     // Use replace for clean redirect
@@ -107,31 +109,31 @@ export default function SignInPage() {
 
   const handleGoogleLogin = () => {
     setError("");
-    const dest = tab === "admin" ? "/admin" : "/dashboard";
+    const dest = "/dashboard";
     signIn("google", { callbackUrl: new URL(dest, window.location.origin).toString() });
   };
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await signIn("admin-credentials", {
+      const res = await signIn("staff-credentials", {
         redirect: false,
-        email: adminEmail,
-        password: adminPassword,
+        email: staffEmail,
+        password: staffPassword,
       });
 
       if (res?.error) {
-        setError("Invalid admin credentials.");
+        setError("Invalid staff credentials.");
         setLoading(false);
         return;
       }
 
       // Successful login: hard redirect to fresh session
-      window.location.href = callbackUrl ?? "/admin";
+      window.location.href = callbackUrl ?? "/staff";
     } catch (err) {
-      setError("Admin sign-in failed.");
+      setError("Staff sign-in failed.");
       setLoading(false);
     }
   };
@@ -179,20 +181,20 @@ export default function SignInPage() {
 
         {/* Tab switcher */}
         <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-6">
-          {(["player", "admin"] as LoginTab[]).map((t) => (
+          {(["player", "staff"] as LoginTab[]).map((t) => (
             <button
               key={t}
               onClick={() => { setTab(t); setError(""); }}
               className={cn(
                 "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                 tab === t
-                  ? t === "admin"
-                    ? "bg-academy-gold text-black shadow-xl shadow-academy-gold/20"
+                  ? t === "staff"
+                    ? "bg-emerald-500 text-black shadow-xl shadow-emerald-500/20"
                     : "bg-academy-red text-white shadow-xl shadow-academy-red/20"
                   : "text-gray-500 hover:text-white"
               )}
             >
-              {t === "player" ? "Player Login" : "Admin Login"}
+              {t === "player" ? "Player Login" : "Staff Login"}
             </button>
           ))}
         </div>
@@ -267,22 +269,24 @@ export default function SignInPage() {
             </div>
           )}
 
-          {/* ── ADMIN PANEL ──────────────────────────────────────── */}
-          {tab === "admin" && (
-            <form className="space-y-6" onSubmit={handleAdminLogin}>
+
+
+          {/* ── STAFF PANEL ──────────────────────────────────────── */}
+          {tab === "staff" && (
+            <form className="space-y-6" onSubmit={handleStaffLogin}>
               <Input
-                label="Admin Email"
+                label="Staff Email"
                 type="email"
-                placeholder="admin@samarth.com"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="staff@samarth.com"
+                value={staffEmail}
+                onChange={(e) => setStaffEmail(e.target.value)}
               />
               <Input
                 label="Password"
                 type="password"
                 placeholder="••••••••"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
+                value={staffPassword}
+                onChange={(e) => setStaffPassword(e.target.value)}
               />
 
               {error && (
@@ -298,16 +302,13 @@ export default function SignInPage() {
                 className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
                 disabled={loading}
               >
-                <ShieldCheck className="mr-2" /> {loading ? "Authenticating…" : "Admin Access"}
+                <Users className="mr-2" /> {loading ? "Authenticating…" : "Staff Access"}
               </Button>
 
-              {/* Demo Admin Hint */}
+              {/* Demo Staff Hint */}
               <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Demo Admin Account</p>
-                <div className="space-y-1 text-[10px] font-bold text-center">
-                  <p className="text-gray-400">Email: <span className="text-white">admin@samarth.com</span></p>
-                  <p className="text-gray-400">Pass: <span className="text-white">admin123</span></p>
-                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Add staff via Admin Panel first</p>
+                <p className="text-[10px] text-gray-400 text-center">Use admin to create a staff account to test staff login</p>
               </div>
             </form>
           )}
