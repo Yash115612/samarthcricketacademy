@@ -8,8 +8,16 @@ declare module "next-auth" {
       image?: string | null;
       user_id?: string;
       branch_id?: "samarth" | "aims" | null;
-      role?: "player" | "admin";
+      role?: "player" | "admin" | "staff";
       isProfileComplete?: boolean;
+      membership_status?: string;
+      permissions?: {
+        manageFees?: boolean;
+        manageClients?: boolean;
+        manageAttendance?: boolean;
+        manageMatches?: boolean;
+        manageEnquiries?: boolean;
+      };
     };
   }
 }
@@ -18,8 +26,16 @@ declare module "next-auth/jwt" {
   interface JWT {
     user_id?: string;
     branch_id?: "samarth" | "aims" | null;
-    role?: "player" | "admin";
+    role?: "player" | "admin" | "staff";
     isProfileComplete?: boolean;
+    membership_status?: string;
+    permissions?: {
+      manageFees?: boolean;
+      manageClients?: boolean;
+      manageAttendance?: boolean;
+      manageMatches?: boolean;
+      manageEnquiries?: boolean;
+    };
   }
 }
 

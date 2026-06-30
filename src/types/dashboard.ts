@@ -1,4 +1,4 @@
-export type UserRole = "player" | "admin";
+export type UserRole = "player" | "admin" | "staff";
 export type BranchId = string;
 export type MembershipStatus = "Active" | "Expired" | "Pending";
 export type AttendanceStatus = "Present" | "Absent";

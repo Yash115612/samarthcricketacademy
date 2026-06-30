@@ -78,6 +78,50 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
+    // Staff login using credentials
+    CredentialsProvider({
+      id: "staff-credentials",
+      name: "Staff Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = (credentials?.email ?? "").trim().toLowerCase();
+        const password = credentials?.password ?? "";
+        if (!email || !password) return null;
+
+        const { data: staffUser } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .eq("role", "staff")
+          .maybeSingle();
+
+        if (!staffUser || !staffUser.password_hash) return null;
+
+        const passwordValid = await bcrypt.compare(password, staffUser.password_hash);
+        if (!passwordValid) return null;
+
+        return {
+          id: staffUser.id,
+          name: staffUser.name,
+          email: staffUser.email,
+          role: staffUser.role,
+          branch_id: staffUser.branch_id,
+          isProfileComplete: staffUser.is_profile_complete,
+          membership_status: staffUser.membership_status,
+          permissions: staffUser.permissions || {
+            manageFees: false,
+            manageClients: false,
+            manageAttendance: false,
+            manageMatches: false,
+            manageEnquiries: false
+          }
+        } as any;
+      },
+    }),
+
     // Player login using credentials
     CredentialsProvider({
       id: "credentials",
@@ -207,6 +251,7 @@ export const authOptions: NextAuthOptions = {
         token.membership_status = (user as any).membership_status ?? "none";
         token.name = (user as any).name ?? "";
         token.email = (user as any).email ?? "";
+        token.permissions = (user as any).permissions;
         return token;
       }
 
@@ -220,6 +265,7 @@ export const authOptions: NextAuthOptions = {
           token.branch_id = dbUser.branch_id;
           token.isProfileComplete = dbUser.is_profile_complete;
           token.role = dbUser.role;
+          token.permissions = dbUser.permissions;
         }
       }
       return token;
@@ -235,6 +281,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).membership_status = (token.membership_status as string) ?? "none";
         (session.user as any).name = (token.name as string) ?? "";
         (session.user as any).email = (token.email as string) ?? "";
+        (session.user as any).permissions = token.permissions;
       }
       return session;
     },

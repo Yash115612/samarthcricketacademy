@@ -16,6 +16,11 @@ export default withAuth(
           return token?.role === "admin";
         }
 
+        // Staff routes require staff role
+        if (pathname.startsWith("/staff")) {
+          return token?.role === "staff";
+        }
+
         // Player dashboard (pages and APIs) require at least authenticated
         if (pathname.startsWith("/dashboard") || pathname.startsWith("/api/player") || pathname.startsWith("/api/membership/submit")) {
           return !!token;
@@ -31,6 +36,7 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/api/admin/:path*",
+    "/staff/:path*",
     "/dashboard/:path*",
     "/api/player/:path*",
     "/api/membership/submit",

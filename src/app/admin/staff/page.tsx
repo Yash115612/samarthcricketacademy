@@ -32,7 +32,15 @@ export default function StaffPage() {
     email: "",
     phone: "",
     experience: "",
-    status: "Active"
+    status: "Active",
+    password: "",
+    permissions: {
+      manageFees: false,
+      manageClients: false,
+      manageAttendance: false,
+      manageMatches: false,
+      manageEnquiries: false
+    }
   });
 
   const loadStaff = async (signal?: AbortSignal) => {
@@ -110,7 +118,22 @@ export default function StaffPage() {
   const handleOpenAddModal = () => {
     setIsEditMode(false);
     setSelectedStaff(null);
-    setFormData({ name: "", role: "", email: "", phone: "", experience: "", status: "Active" });
+    setFormData({
+      name: "",
+      role: "",
+      email: "",
+      phone: "",
+      experience: "",
+      status: "Active",
+      password: "",
+      permissions: {
+        manageFees: false,
+        manageClients: false,
+        manageAttendance: false,
+        manageMatches: false,
+        manageEnquiries: false
+      }
+    });
     setIsModalOpen(true);
   };
 
@@ -123,7 +146,15 @@ export default function StaffPage() {
       email: staff.email,
       phone: staff.phone,
       experience: staff.experience,
-      status: staff.status || "Active"
+      status: staff.status || "Active",
+      password: "",
+      permissions: staff.permissions || {
+        manageFees: false,
+        manageClients: false,
+        manageAttendance: false,
+        manageMatches: false,
+        manageEnquiries: false
+      }
     });
     setIsModalOpen(true);
   };
@@ -475,6 +506,40 @@ export default function StaffPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Experience</label>
                 <Input required value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: e.target.value })} className="bg-white/5 border-white/10" placeholder="e.g. 5 Years" />
+              </div>
+              {!isEditMode && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Password</label>
+                  <Input required type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="bg-white/5 border-white/10" placeholder="Set login password" />
+                </div>
+              )}
+              <div className="space-y-3 pt-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Permissions</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { key: "manageFees", label: "Manage Fees/Payments" },
+                    { key: "manageClients", label: "Manage Clients" },
+                    { key: "manageAttendance", label: "Manage Attendance" },
+                    { key: "manageMatches", label: "Manage Matches" },
+                    { key: "manageEnquiries", label: "Manage Enquiries" }
+                  ].map((perm) => (
+                    <label key={perm.key} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.permissions[perm.key as keyof typeof formData.permissions]}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          permissions: {
+                            ...formData.permissions,
+                            [perm.key]: e.target.checked
+                          }
+                        })}
+                        className="w-4 h-4 accent-academy-gold"
+                      />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{perm.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
               
               <div className="pt-4 flex gap-4">
