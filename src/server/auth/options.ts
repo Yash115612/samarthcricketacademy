@@ -131,6 +131,7 @@ export const authOptions: NextAuthOptions = {
         const email = user.email?.toLowerCase();
         if (!email) return false;
 
+        // Look for existing user
         const { data: existingUser } = await supabase
           .from("users")
           .select("*")
@@ -138,14 +139,16 @@ export const authOptions: NextAuthOptions = {
           .maybeSingle();
 
         if (existingUser) {
-          // Update google id if needed
+          // Update google_id if missing
           if (!existingUser.google_id) {
-            await supabase
+            const { error: updateErr } = await supabase
               .from("users")
               .update({ google_id: user.id })
               .eq("id", existingUser.id);
+            if (updateErr) console.error("Error updating user google_id:", updateErr);
           }
-          // Populate user object with existing data
+
+          // Populate session user
           (user as any).id = existingUser.id;
           (user as any).role = existingUser.role;
           (user as any).branch_id = existingUser.branch_id;
@@ -154,10 +157,14 @@ export const authOptions: NextAuthOptions = {
           return true;
         }
 
-        // Create new user in Supabase
-        const { data: newUser, error } = await supabase
+        // Generate a unique ID
+        const newId = crypto.randomUUID();
+
+        // Create new user in Supabase with manual ID
+        const { data: newUser, error: insertErr } = await supabase
           .from("users")
           .insert({
+            id: newId,
             name: user.name || email.split("@")[0],
             email,
             google_id: user.id,
@@ -169,11 +176,16 @@ export const authOptions: NextAuthOptions = {
           .select()
           .single();
 
-        if (error || !newUser) {
-          console.error("Error creating user in Supabase:", error);
+        if (insertErr) {
+          console.error("Supabase user insert failed:", insertErr);
+          return false;
+        }
+        if (!newUser) {
+          console.error("Supabase insert succeeded but returned no data");
           return false;
         }
 
+        // Populate user object for session
         (user as any).id = newUser.id;
         (user as any).role = newUser.role;
         (user as any).branch_id = newUser.branch_id;
