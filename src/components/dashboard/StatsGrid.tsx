@@ -14,23 +14,32 @@ interface StatsGridProps {
 
 export const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => {
   const statItems = [
-    { label: "Matches", value: stats.matches_played, icon: Activity, color: "text-blue-500", aria: `Total matches played: ${stats.matches_played}` },
-    { label: "Total Runs", value: stats.total_runs, icon: TrendingUp, color: "text-emerald-500", aria: `Total runs scored: ${stats.total_runs}` },
-    { label: "Wickets", value: stats.total_wickets, icon: Trophy, color: "text-academy-gold", aria: `Total wickets taken: ${stats.total_wickets}` },
-    { label: "Role", value: stats.role, icon: Star, color: "text-academy-red", aria: `Player role: ${stats.role}` },
+    { label: "Matches", value: stats.matches_played, icon: Activity, color: "from-blue-500 to-blue-700", textColor: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", aria: `Total matches played: ${stats.matches_played}` },
+    { label: "Total Runs", value: stats.total_runs, icon: TrendingUp, color: "from-emerald-500 to-emerald-700", textColor: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", aria: `Total runs scored: ${stats.total_runs}` },
+    { label: "Wickets", value: stats.total_wickets, icon: Trophy, color: "from-academy-gold to-yellow-600", textColor: "text-academy-gold", bg: "bg-academy-gold/10", border: "border-academy-gold/20", aria: `Total wickets taken: ${stats.total_wickets}` },
+    { label: "Role", value: stats.role, icon: Star, color: "from-academy-red to-red-700", textColor: "text-academy-red", bg: "bg-academy-red/10", border: "border-academy-red/20", aria: `Player role: ${stats.role}` },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Player Performance Statistics">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" role="region" aria-label="Player Performance Statistics">
       {statItems.map((stat, i) => (
         <Card 
           key={i} 
-          className="border-white/5 bg-academy-gray/30 backdrop-blur-md p-6 text-center group hover:border-white/20 transition-all"
+          className={cn(
+            "relative overflow-hidden border bg-academy-gray/40 backdrop-blur-xl p-6 md:p-8 text-center group hover:scale-[1.02] transition-all duration-300",
+            stat.border
+          )}
           aria-label={stat.aria}
         >
-          <stat.icon size={24} className={cn("mx-auto mb-3", stat.color)} aria-hidden="true" />
-          <p className="text-2xl font-black mb-1 text-white">{stat.value}</p>
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">{stat.label}</p>
+          {/* Background gradient accent */}
+          <div className={cn("absolute top-0 left-0 w-full h-1 bg-gradient-to-r", stat.color)} />
+          
+          <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg", stat.bg, "border", stat.border)}>
+            <stat.icon size={28} className={stat.textColor} aria-hidden="true" />
+          </div>
+          
+          <p className="text-3xl md:text-4xl lg:text-5xl font-black mb-2 text-white tracking-tight">{stat.value}</p>
+          <p className="text-[11px] md:text-[12px] font-black uppercase tracking-[0.2em] text-gray-500">{stat.label}</p>
         </Card>
       ))}
     </div>
