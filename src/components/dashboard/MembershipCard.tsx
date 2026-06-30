@@ -36,28 +36,28 @@ export const MembershipCard: React.FC<MembershipCardProps> = ({ membership, onRe
       <Card
         className={cn(
           "relative overflow-hidden bg-gradient-to-br from-academy-gray/50 to-academy-dark/70 backdrop-blur-2xl p-6 md:p-7 flex flex-col gap-4 transition-all cursor-pointer border shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-          expiringSoon ? "border-red-500/40 hover:border-red-500/60" : "border-white/10 hover:border-academy-gold/40"
+          expiringSoon ? "border-red-500/40 hover:border-red-500/60 shadow-red-500/15" : "border-white/10 hover:border-academy-gold/40 shadow-academy-gold/10"
         )}
         role="region"
         aria-labelledby="membership-title"
       >
         {/* Decorative elements */}
         <div className={cn(
-          "absolute top-0 right-0 w-32 h-32 blur-3xl -z-10 transition-all",
-          expiringSoon ? "bg-red-500/20 group-hover/card:bg-red-500/30" : "bg-academy-gold/15 group-hover/card:bg-academy-gold/25"
+          "absolute top-0 right-0 w-40 h-40 blur-3xl -z-10 transition-all",
+          expiringSoon ? "bg-red-500/30 group-hover/card:bg-red-500/40" : "bg-academy-gold/20 group-hover/card:bg-academy-gold/30"
         )} />
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-academy-gold/15 border border-academy-gold/25 flex items-center justify-center">
-              <CreditCard className="text-academy-gold shrink-0" size={18} aria-hidden="true" />
+            <div className="w-12 h-12 rounded-xl bg-academy-gold/15 border border-academy-gold/25 flex items-center justify-center">
+              <CreditCard className="text-academy-gold shrink-0" size={20} aria-hidden="true" />
             </div>
             <h2 id="membership-title" className="text-[11px] font-black uppercase tracking-[0.3em] text-white">
               Membership
             </h2>
           </div>
-          <ChevronRight size={16} className="text-gray-500 group-hover/card:text-academy-gold transition-colors" />
+          <ChevronRight size={16} className="text-gray-600 group-hover/card:text-academy-gold transition-colors" />
         </div>
 
         {/* Plan name */}
@@ -95,14 +95,14 @@ export const MembershipCard: React.FC<MembershipCardProps> = ({ membership, onRe
               </span>
               <span className="font-mono">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
-              <div 
+            <div className="w-full h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/10">
+              <div
                 className={cn(
-                  "h-full rounded-full transition-all duration-500 ease-out",
-                  expiringSoon 
-                    ? "bg-gradient-to-r from-red-500 to-red-600" 
-                    : expiringSoonWarning 
-                    ? "bg-gradient-to-r from-yellow-500 to-yellow-600" 
+                  "h-full rounded-full transition-all duration-700",
+                  expiringSoon
+                    ? "bg-gradient-to-r from-red-500 to-red-600"
+                    : expiringSoonWarning
+                    ? "bg-gradient-to-r from-yellow-500 to-yellow-600"
                     : "bg-gradient-to-r from-academy-gold to-yellow-600"
                 )}
                 style={{ width: `${100 - progress}%` }}

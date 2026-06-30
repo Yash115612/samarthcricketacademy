@@ -212,11 +212,23 @@ export default function PlayerDashboard() {
     : null;
 
   return (
-    <div className="min-h-screen bg-academy-dark text-white flex flex-col">
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-32 pb-20 relative" id="main-content">
+    <div className="min-h-screen bg-academy-dark text-white flex flex-col relative overflow-hidden">
+      {/* Subtle cricket-themed background pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-5" aria-hidden="true">
+        <svg width="100%" height="100%" className="opacity-20">
+          <pattern id="cricket-pattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+            <circle cx="40" cy="40" r="3" fill="white" />
+            <circle cx="0" cy="0" r="2" fill="white" />
+            <circle cx="80" cy="80" r="2" fill="white" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#cricket-pattern)" />
+        </svg>
+      </div>
+
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-32 pb-20 relative z-10" id="main-content">
         {/* Membership status banners */}
         {user?.membership_status !== "active" && (
-          <div className="mb-8 p-6 rounded-[2rem] bg-gradient-to-r from-academy-red/20 to-academy-gold/20 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="mb-6 p-6 rounded-[2rem] bg-gradient-to-r from-academy-red/20 to-academy-gold/20 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-academy-red/20 flex items-center justify-center text-academy-red shrink-0">
                 <AlertTriangle size={28} />
@@ -252,7 +264,7 @@ export default function PlayerDashboard() {
             ? Math.ceil((new Date(dashboard.membership.expiry_date).getTime() - Date.now()) / 86400000)
             : null;
           return (
-            <div className="mb-8 p-5 rounded-[2rem] bg-gradient-to-r from-red-500/15 to-yellow-500/10 border border-red-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="mb-6 p-5 rounded-[2rem] bg-gradient-to-r from-red-500/15 to-yellow-500/10 border border-red-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-400 shrink-0 animate-pulse">
                   <Clock size={22} />
@@ -261,7 +273,7 @@ export default function PlayerDashboard() {
                   <h3 className="text-sm font-black uppercase tracking-tight text-red-400">
                     Membership Expiring {daysLeft === 0 ? "Today" : `in ${daysLeft} Day${daysLeft !== 1 ? "s" : ""}`}
                   </h3>
-                  <p className="text-gray-400 text-[11px] font-medium mt-0.5">
+                  <p className="text-gray-400 text-[11px] font-medium mt-1">
                     Your membership expires on {new Date(dashboard.membership!.expiry_date).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}. Renew now to avoid losing access.
                   </p>
                 </div>
@@ -312,7 +324,7 @@ export default function PlayerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-8">
 
           {/* LEFT — main content (2 cols) */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
+          <div className="lg:col-span-2 flex flex-col gap-6">
             {dashboard && <MatchHistory items={dashboard.matchHistory} />}
             <UpcomingMatches
               matches={dashboard?.upcomingMatches ?? []}
@@ -352,9 +364,9 @@ export default function PlayerDashboard() {
             className="absolute inset-0 bg-academy-dark/80 backdrop-blur-md"
             onClick={() => setShowPayment(false)}
           />
-          <Card className="relative z-10 w-full max-w-md p-8 border-white/10 bg-academy-gray shadow-2xl">
+          <Card className="relative z-10 w-full max-w-md p-8 border-white/10 bg-academy-gray/40 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
             <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-academy-gold/10 rounded-full flex items-center justify-center mx-auto text-academy-gold">
+              <div className="w-20 h-20 bg-gradient-to-br from-academy-gold/20 to-academy-red/20 rounded-full flex items-center justify-center mx-auto text-academy-gold">
                 <CreditCard size={40} aria-hidden="true" />
               </div>
               <div>
