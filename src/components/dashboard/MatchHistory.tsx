@@ -19,7 +19,7 @@ interface MatchHistoryProps {
 
 export const MatchHistory: React.FC<MatchHistoryProps> = ({ items }) => {
   return (
-    <Card className="border-white/5 bg-academy-gray/40 backdrop-blur-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.25)]" role="region" aria-labelledby="history-title">
+    <Card className="border-white/5 bg-academy-gray/40 backdrop-blur-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.25)] rounded-2xl h-full" role="region" aria-labelledby="history-title">
       <CardHeader className="border-b border-white/5 flex flex-row items-center justify-between p-6">
         <CardTitle id="history-title" className="text-xl font-black uppercase tracking-tight flex items-center gap-3 text-white">
           <Trophy className="text-academy-gold" size={20} aria-hidden="true" /> Match History
@@ -32,12 +32,12 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ items }) => {
       </CardHeader>
       <CardContent className="p-0">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 mb-4 rounded-full bg-academy-gold/10 border border-academy-gold/20 flex items-center justify-center">
-              <CalendarCheck className="text-academy-gold" size={32} />
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-12 h-12 mb-3 rounded-full bg-academy-gold/10 border border-academy-gold/20 flex items-center justify-center">
+              <CalendarCheck className="text-academy-gold" size={24} />
             </div>
-            <p className="text-lg font-black text-white mb-1">No matches yet</p>
-            <p className="text-[11px] text-gray-400 font-medium">Join your first match and start your cricket journey!</p>
+            <p className="text-sm font-black text-white mb-1">No matches yet</p>
+            <p className="text-[11px] text-gray-400 font-medium">Join your first match!</p>
           </div>
         ) : (
           <div className="overflow-x-auto custom-scrollbar">

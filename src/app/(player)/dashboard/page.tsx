@@ -228,7 +228,7 @@ export default function PlayerDashboard() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-32 pb-20 relative z-10" id="main-content">
         {/* Membership status banners */}
         {user?.membership_status !== "active" && (
-          <div className="mb-6 p-6 rounded-[2rem] bg-gradient-to-r from-academy-red/20 to-academy-gold/20 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+          <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-academy-red/20 to-academy-gold/20 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-academy-red/20 flex items-center justify-center text-academy-red shrink-0">
                 <AlertTriangle size={28} />
@@ -264,7 +264,7 @@ export default function PlayerDashboard() {
             ? Math.ceil((new Date(dashboard.membership.expiry_date).getTime() - Date.now()) / 86400000)
             : null;
           return (
-            <div className="mb-6 p-5 rounded-[2rem] bg-gradient-to-r from-red-500/15 to-yellow-500/10 border border-red-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
+            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-red-500/15 to-yellow-500/10 border border-red-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-700 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-400 shrink-0 animate-pulse">
                   <Clock size={22} />
@@ -309,20 +309,19 @@ export default function PlayerDashboard() {
         )}
 
         {/* ── Row 1: Profile header ── */}
-        <div className="mb-8">
+        <div className="mb-6">
           <DashboardHeader user={user} membership={membership} onRenew={renewMembership} />
         </div>
 
         {/* ── Row 2: Stats strip ── */}
         {dashboard && (
-          <div className="mb-8">
+          <div className="mb-6">
             <StatsGrid stats={dashboard.stats} />
           </div>
         )}
 
         {/* ── Row 3: Main content + Sidebar ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-8">
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch mb-6">
           {/* LEFT — main content (2 cols) */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {dashboard && <MatchHistory items={dashboard.matchHistory} />}
@@ -334,14 +333,14 @@ export default function PlayerDashboard() {
           </div>
 
           {/* RIGHT — 2×2 card grid */}
-          <div className="grid grid-cols-2 gap-4 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
             <MembershipCard membership={membership} onRenew={renewMembership} />
-            {dashboard ? (
-              <PlayerRecords matchHistory={dashboard.matchHistory} stats={dashboard.stats} />
-            ) : (
-              <div />
-            )}
-            <NoticeBoard notices={dashboard?.notices ?? []} />
+            <div className="grid grid-cols-2 gap-4">
+              {dashboard && (
+                <PlayerRecords matchHistory={dashboard.matchHistory} stats={dashboard.stats} />
+              )}
+              <NoticeBoard notices={dashboard?.notices ?? []} />
+            </div>
             <AttendanceSummary attendance={dashboard?.attendance?.entries ?? []} />
           </div>
         </div>
@@ -364,7 +363,7 @@ export default function PlayerDashboard() {
             className="absolute inset-0 bg-academy-dark/80 backdrop-blur-md"
             onClick={() => setShowPayment(false)}
           />
-          <Card className="relative z-10 w-full max-w-md p-8 border-white/10 bg-academy-gray/40 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+          <Card className="relative z-10 w-full max-w-md p-8 border-white/10 bg-academy-gray/40 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] rounded-2xl">
             <div className="text-center space-y-6">
               <div className="w-20 h-20 bg-gradient-to-br from-academy-gold/20 to-academy-red/20 rounded-full flex items-center justify-center mx-auto text-academy-gold">
                 <CreditCard size={40} aria-hidden="true" />

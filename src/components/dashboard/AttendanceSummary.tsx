@@ -15,9 +15,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryProps> = ({ attendance
   const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
   return (
-    <Link href="/dashboard/attendance" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-2xl">
+    <Link href="/dashboard/attendance" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-2xl h-full">
       <Card
-        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-emerald-500/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-emerald-500/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)] h-full rounded-2xl"
         role="region"
         aria-labelledby="attendance-title"
       >
@@ -33,12 +33,12 @@ export const AttendanceSummary: React.FC<AttendanceSummaryProps> = ({ attendance
         </div>
 
         {totalCount === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4 text-center">
+          <div className="flex flex-col items-center justify-center py-4 text-center flex-grow">
             <CalendarCheck2 className="text-emerald-500/50 mb-2" size={20} />
             <p className="text-[10px] text-gray-400 font-medium">No attendance data yet</p>
           </div>
         ) : (
-          <>
+          <div className="flex flex-col gap-3 flex-grow">
             {/* Present / Absent */}
             <div className="grid grid-cols-2 gap-2">
               <div
@@ -58,7 +58,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryProps> = ({ attendance
             </div>
 
             {/* Progress bar */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-2.5">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 flex-grow">
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Monthly</span>
                 <span className="text-[9px] font-black text-emerald-500">{percentage}%</span>
@@ -77,7 +77,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryProps> = ({ attendance
                 />
               </div>
             </div>
-          </>
+          </div>
         )}
       </Card>
     </Link>

@@ -38,9 +38,9 @@ export const PlayerRecords: React.FC<PlayerRecordsProps> = ({ matchHistory, stat
   ];
 
   return (
-    <Link href="/dashboard/records" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold rounded-2xl">
+    <Link href="/dashboard/records" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold rounded-2xl h-full">
       <Card
-        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-gold/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-gold/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)] h-full rounded-2xl"
         role="region"
         aria-labelledby="records-title"
       >
@@ -56,7 +56,7 @@ export const PlayerRecords: React.FC<PlayerRecordsProps> = ({ matchHistory, stat
         </div>
 
         {/* 2×2 stat grid */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 flex-grow">
           {records.map((rec) => (
             <div key={rec.label} className="bg-white/5 rounded-xl p-3 text-center">
               <p className="text-lg font-black text-academy-gold leading-none">{rec.value}</p>

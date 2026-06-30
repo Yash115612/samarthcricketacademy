@@ -11,9 +11,9 @@ interface NoticeBoardProps {
 
 export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
   return (
-    <Link href="/dashboard/notices" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-red rounded-2xl">
+    <Link href="/dashboard/notices" className="block group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-academy-red rounded-2xl h-full">
       <Card
-        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-red/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+        className="border-white/5 bg-academy-gray/40 backdrop-blur-xl p-4 flex flex-col gap-3 hover:border-academy-red/40 transition-all cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.25)] h-full rounded-2xl"
         role="region"
         aria-labelledby="notices-title"
       >
@@ -29,12 +29,12 @@ export const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
         </div>
 
         {notices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4 text-center">
+          <div className="flex flex-col items-center justify-center py-4 text-center flex-grow">
             <Megaphone className="text-academy-red/50 mb-2" size={20} />
             <p className="text-[10px] text-gray-400 font-medium">No notices yet</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3 max-h-44 overflow-hidden">
+          <div className="flex flex-col gap-3 max-h-44 overflow-hidden flex-grow">
             {notices.slice(0, 3).map((notice) => (
               <article key={notice.id} className="flex flex-col gap-0.5 pl-3 relative">
                 <div
