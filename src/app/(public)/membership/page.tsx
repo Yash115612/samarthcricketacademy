@@ -59,7 +59,7 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
 
       {/* Plans */}
       <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center">
           {availablePlans.map((plan) => (
             <div
               key={plan.id}
