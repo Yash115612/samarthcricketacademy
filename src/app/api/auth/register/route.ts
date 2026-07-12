@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { users, ensureDbSynced } from "@/server/db/inMemoryDb";
+import bcrypt from "bcryptjs";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, getIP } from "@/server/security/rateLimiter";
 import { z } from "zod";
 
@@ -17,7 +18,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "TOO_MANY_REQUESTS", message: "Too many signup attempts. Please try again later." }, { status: 429 });
   }
 
-  await ensureDbSynced();
   const body = (await req.json().catch(() => null));
   if (!body) return NextResponse.json({ ok: false, error: "INVALID_JSON" }, { status: 400 });
 
@@ -28,25 +28,38 @@ export async function POST(req: Request) {
   }
 
   const { name, email, phone, password, branch_id } = result.data;
+  const supabase: any = createAdminClient();
 
   // 1. Check if email or phone already in use
-  const existing = users.getByEmailAnyBranch(email);
+  const { data: existing } = await supabase.from("users").select("id").eq("email", email).maybeSingle();
   if (existing) {
     return NextResponse.json({ ok: false, error: "USER_EXISTS", message: "An account already exists for this email address." }, { status: 409 });
   }
-  const existingPhone = phone ? users.getByPhone(phone) : null;
+  const { data: existingPhone } = await supabase.from("users").select("id").eq("phone", phone).maybeSingle();
   if (existingPhone) {
     return NextResponse.json({ ok: false, error: "PHONE_EXISTS", message: "This phone number is already registered to another account." }, { status: 409 });
   }
 
-  // 2. Create user (membership_status is set to 'none' by default in createPlayer)
-  const created = users.createPlayer({ email, password, branch_id, name });
-  if (!created.ok) {
-    return NextResponse.json({ ok: false, error: created.error, message: "Could not create account." }, { status: 409 });
-  }
+  // 2. Create user (membership_status is set to 'none' by default)
+  const passwordHash = bcrypt.hashSync(password, 12);
+  const { data: created, error } = await supabase
+    .from("users")
+    .insert({
+      email,
+      name,
+      phone,
+      branch_id,
+      role: "player",
+      is_profile_complete: true,
+      membership_status: "none",
+      password_hash: passwordHash,
+    })
+    .select()
+    .single();
 
-  // 3. Update profile with phone number
-  users.updateProfile(created.user.id, { phone, isProfileComplete: true });
+  if (error || !created) {
+    return NextResponse.json({ ok: false, error: "USER_EXISTS", message: "Could not create account." }, { status: 409 });
+  }
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }

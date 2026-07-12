@@ -52,17 +52,6 @@ const PT_PACKAGES = [
   },
 ];
 
-const FOCUS_AREAS = [
-  { id: "batting", label: "Batting Technique", icon: Target },
-  { id: "bowling", label: "Bowling Skills", icon: Flame },
-  { id: "fielding", label: "Fielding & Agility", icon: Shield },
-  { id: "fitness", label: "Fitness & Strength", icon: Dumbbell },
-  { id: "mental", label: "Mental Game", icon: Brain },
-  { id: "strategy", label: "Match Strategy", icon: Trophy },
-];
-
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
 type TrainingType = "group" | "personal";
 
 export default function AdmissionPage() {
@@ -70,56 +59,80 @@ export default function AdmissionPage() {
   const [selectedBranch, setSelectedBranch] = useState<string>("samarth");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [selectedPtPackage, setSelectedPtPackage] = useState<string>("");
-  const [focusAreas, setFocusAreas] = useState<string[]>([]);
-  const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    email: "",
-    phone: "",
+    fullName: "",
+    dateOfBirth: "",
     gender: "",
-    experience: "Beginner (0–1 year)",
-    role: "Batsman",
-    goal: "School / College Team",
-    preferredTime: "Morning (8:00 AM – 11:00 AM)",
-    referral: "Social Media (Instagram / Facebook)",
+    phone: "",
+    parentName: "",
+    parentPhone: "",
+    email: "",
+    address: "",
+    schoolName: "",
+    classStandard: "",
+    board: "",
+    playingRole: "",
+    battingStyle: "",
+    bowlingStyle: "",
+    previousExperience: "no",
+    previousAcademy: "",
+    experienceYears: "",
+    preferredBatchTiming: "",
+    howHearAboutUs: "",
+    medicalConditions: "no",
+    medicalDetails: "",
+    privacyPolicyAccepted: false,
     message: "",
   });
 
-  const toggleFocus = (id: string) =>
-    setFocusAreas((prev) => prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]);
-
-  const toggleDay = (d: string) =>
-    setPreferredDays((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type, checked } = e.target as any;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const summaryMessage = `
-        Training: ${trainingType === "group" ? "Batch (" + selectedBatch + ")" : "PT (" + selectedPtPackage + ")"}
-        Focus: ${focusAreas.join(", ")}
-        Days: ${preferredDays.join(", ")}
-        Time: ${formData.preferredTime}
-        Experience: ${formData.experience}
-        Role: ${formData.role}
-        Goal: ${formData.goal}
-        Message: ${formData.message}
-      `.trim();
-
       const res = await fetch("/api/membership/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
+          name: formData.fullName,
+          date_of_birth: formData.dateOfBirth,
+          gender: formData.gender,
           phone: formData.phone,
+          parent_name: formData.parentName,
+          parent_phone: formData.parentPhone,
           email: formData.email,
+          address: formData.address,
+          school_name: formData.schoolName,
+          class_standard: formData.classStandard,
+          board: formData.board,
+          playing_role: formData.playingRole,
+          batting_style: formData.battingStyle,
+          bowling_style: formData.bowlingStyle,
+          previous_experience: formData.previousExperience,
+          previous_experience_details: formData.previousExperience === "yes" 
+            ? `Academy: ${formData.previousAcademy}, Years: ${formData.experienceYears}` 
+            : "",
           branch_id: selectedBranch,
+          preferred_batch_timing: formData.preferredBatchTiming,
+          how_hear_about_us: formData.howHearAboutUs,
+          medical_conditions: formData.medicalConditions,
+          medical_conditions_details: formData.medicalConditions === "yes" 
+            ? formData.medicalDetails 
+            : "",
+          privacy_policy_accepted: formData.privacyPolicyAccepted,
           type: "admission",
-          message: summaryMessage,
+          message: formData.message,
         }),
       });
 
@@ -145,7 +158,7 @@ export default function AdmissionPage() {
             </div>
             <h1 className="text-4xl font-black uppercase tracking-tight mb-4">Application Received!</h1>
             <p className="text-gray-400 font-medium leading-relaxed mb-8">
-              Thank you for applying to Samarth Cricket Academy, Mira Bhayander. Our coaching team will review your application
+              Thank you for applying to Samarth Cricket Academy. Our coaching team will review your application
               and contact you within <span className="text-white font-bold">24 hours</span>.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -167,14 +180,12 @@ export default function AdmissionPage() {
     <div className="min-h-screen bg-academy-dark text-white flex flex-col">
       <Navbar />
 
-      {/* Back button */}
       <div className="max-w-7xl mx-auto px-6 pt-28">
         <Link href="/" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
           <ArrowLeft size={14} /> Back to Home
         </Link>
       </div>
 
-      {/* Hero */}
       <section className="pt-8 pb-20 px-6 bg-gradient-to-b from-academy-red/10 to-transparent border-b border-white/5">
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-academy-red/10 border border-academy-red/20 text-academy-red text-[10px] font-black uppercase tracking-widest mb-6">
@@ -184,19 +195,17 @@ export default function AdmissionPage() {
             Join <span className="text-academy-red">Samarth</span><br />Cricket Academy
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto font-medium">
-            Mira Bhayander&apos;s professional cricket training program — choose group batch coaching or focused 1-on-1 sessions designed to fast-track your development.
+            Mira Bhayander&apos;s professional cricket training program.
           </p>
         </div>
       </section>
 
-      {/* Training type selector */}
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-center text-xs font-black uppercase tracking-[0.3em] text-gray-500 mb-8">
             Select Your Training Mode
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Group Batch */}
             <button
               type="button"
               onClick={() => setTrainingType("group")}
@@ -220,14 +229,13 @@ export default function AdmissionPage() {
               </div>
               <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Group Batch</h3>
               <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                Train alongside peers in structured batch sessions. Great for discipline, teamwork, and building match temperament.
+                Train alongside peers in structured batch sessions.
               </p>
               <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-academy-gold">
-                From ₹1,500/month <ChevronRight size={12} />
+                From ₹1,500/mo <ChevronRight size={12} />
               </div>
             </button>
 
-            {/* Personal Training */}
             <button
               type="button"
               onClick={() => setTrainingType("personal")}
@@ -251,17 +259,13 @@ export default function AdmissionPage() {
               </div>
               <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Personal Training</h3>
               <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                1-on-1 coaching tailored entirely to you — your schedule, your weaknesses, your goals. Maximum results, fastest growth.
+                1-on-1 coaching tailored entirely to you.
               </p>
-              <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-academy-red">
-                Click for details <ChevronRight size={12} />
-              </div>
             </button>
           </div>
         </div>
       </section>
 
-      {/* Personal Training packages (visible only when personal selected) */}
       {trainingType === "personal" && (
         <section className="pb-8 px-6">
           <div className="max-w-4xl mx-auto">
@@ -303,7 +307,6 @@ export default function AdmissionPage() {
         </section>
       )}
 
-      {/* Batch selection (visible only when group selected) */}
       {trainingType === "group" && (
         <section className="pb-8 px-6">
           <div className="max-w-4xl mx-auto">
@@ -340,7 +343,6 @@ export default function AdmissionPage() {
         </section>
       )}
 
-      {/* Main admission form */}
       <section className="pb-24 px-6">
         <div className="max-w-4xl mx-auto">
           <Card className="p-8 md:p-12 border-white/10 bg-academy-gray/40 backdrop-blur-xl shadow-2xl">
@@ -348,263 +350,356 @@ export default function AdmissionPage() {
               <ClipboardList className="text-academy-red" size={24} /> Admission Form
             </h2>
             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-10">
-              Fill in your details — we&apos;ll contact you within 24 hours
+              Fill in your details
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-10">
-
-              {/* ── Personal Information ── */}
               <div className="space-y-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
                   <User size={12} /> Personal Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Input 
-                    label="Full Name" 
-                    placeholder="Enter your full name" 
-                    required 
-                    value={formData.name}
-                    onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                  <Input
+                    label="Full Name"
+                    name="fullName"
+                    placeholder="Enter your full name"
+                    required
+                    value={formData.fullName}
+                    onChange={handleChange}
                   />
-                  <Input 
-                    label="Age" 
-                    type="number" 
-                    placeholder="Your age" 
-                    min="5" 
-                    max="60" 
-                    required 
-                    value={formData.age}
-                    onChange={(e) => setFormData(p => ({ ...p, age: e.target.value }))}
-                  />
-                  <Input 
-                    label="Email Address" 
-                    type="email" 
-                    placeholder="your@email.com" 
-                    required 
-                    value={formData.email}
-                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                  />
-                  <Input 
-                    label="Phone Number" 
-                    type="tel" 
-                    placeholder="+91 XXXXX XXXXX" 
-                    required 
-                    value={formData.phone}
-                    onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
+                  <Input
+                    label="Date of Birth"
+                    name="dateOfBirth"
+                    type="date"
+                    required
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-bold text-gray-300 mb-2">Gender</label>
-                    <select 
+                    <select
+                      name="gender"
                       value={formData.gender}
-                      onChange={(e) => setFormData(p => ({ ...p, gender: e.target.value }))}
+                      onChange={handleChange}
                       className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                      required
                     >
                       <option value="">Select gender</option>
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Prefer not to say</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-2">Select Branch</label>
-                    <select 
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Branch</label>
+                    <select
                       value={selectedBranch}
                       onChange={(e) => setSelectedBranch(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                      required
                     >
                       <option value="samarth">Samarth Cricket Academy (Mira Bhayander)</option>
                       <option value="aims">AIMS Academy</option>
                     </select>
                   </div>
                 </div>
-              </div>
-
-              {/* ── Cricket Background ── */}
-              <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
-                  <Trophy size={12} /> Cricket Background
-                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-2">Experience Level</label>
-                    <select 
-                      value={formData.experience}
-                      onChange={(e) => setFormData(p => ({ ...p, experience: e.target.value }))}
-                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                    >
-                      <option>Beginner (0–1 year)</option>
-                      <option>Intermediate (1–3 years)</option>
-                      <option>Advanced (3+ years)</option>
-                      <option>Professional</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-2">Playing Role</label>
-                    <select 
-                      value={formData.role}
-                      onChange={(e) => setFormData(p => ({ ...p, role: e.target.value }))}
-                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                    >
-                      <option>Batsman</option>
-                      <option>Bowler</option>
-                      <option>All-rounder</option>
-                      <option>Wicket-keeper</option>
-                      <option>Not Sure Yet</option>
-                    </select>
-                  </div>
+                  <Input
+                    label="Phone Number"
+                    name="phone"
+                    type="tel"
+                    placeholder="+91 XXXXX XXXXX"
+                    required
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Email Address"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    label="Parent/Guardian Name"
+                    name="parentName"
+                    placeholder="Enter parent/guardian name"
+                    value={formData.parentName}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Parent/Guardian Phone"
+                    name="parentPhone"
+                    type="tel"
+                    placeholder="+91 XXXXX XXXXX"
+                    value={formData.parentPhone}
+                    onChange={handleChange}
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-300 mb-2">Cricket Goal</label>
-                  <select 
-                    value={formData.goal}
-                    onChange={(e) => setFormData(p => ({ ...p, goal: e.target.value }))}
-                    className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                  >
-                    <option>School / College Team</option>
-                    <option>District Level</option>
-                    <option>State Level</option>
-                    <option>National / IPL Dream</option>
-                    <option>Recreational / Fitness</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* ── Personal Training extras (shown only when personal selected) ── */}
-              {trainingType === "personal" && (
-                <div className="space-y-6">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
-                    <UserCheck size={12} /> Personal Training Preferences
-                  </h3>
-
-                  {/* Preferred days */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-3">Preferred Training Days</label>
-                    <div className="flex flex-wrap gap-2">
-                      {DAYS.map((d) => (
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => toggleDay(d)}
-                          className={cn(
-                            "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all",
-                            preferredDays.includes(d)
-                              ? "bg-academy-red text-white border-academy-red"
-                              : "bg-white/5 text-gray-400 border-white/10 hover:border-white/30"
-                          )}
-                        >
-                          {d}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Preferred time */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-2">Preferred Training Time</label>
-                    <select 
-                      value={formData.preferredTime}
-                      onChange={(e) => setFormData(p => ({ ...p, preferredTime: e.target.value }))}
-                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                    >
-                      <option>Early Morning (5:30 AM – 8:00 AM)</option>
-                      <option>Morning (8:00 AM – 11:00 AM)</option>
-                      <option>Afternoon (1:00 PM – 4:00 PM)</option>
-                      <option>Evening (4:00 PM – 7:00 PM)</option>
-                      <option>Night (7:00 PM – 9:00 PM)</option>
-                    </select>
-                  </div>
-
-                  {/* Focus areas */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-300 mb-3">
-                      Training Focus Areas <span className="text-gray-500 font-medium normal-case text-xs">(select all that apply)</span>
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {FOCUS_AREAS.map((f) => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() => toggleFocus(f.id)}
-                          className={cn(
-                            "flex items-center gap-3 p-3 rounded-xl border text-left transition-all",
-                            focusAreas.includes(f.id)
-                              ? "border-academy-red bg-academy-red/10 text-white"
-                              : "border-white/10 bg-white/5 text-gray-400 hover:border-white/30"
-                          )}
-                        >
-                          <f.icon size={16} className={focusAreas.includes(f.id) ? "text-academy-red" : "text-gray-600"} />
-                          <span className="text-[10px] font-black uppercase tracking-widest">{f.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ── Additional Info ── */}
-              <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
-                  <Mail size={12} /> Additional Information
-                </h3>
-                <div>
-                  <label className="block text-sm font-bold text-gray-300 mb-2">How did you hear about us?</label>
-                  <select 
-                    value={formData.referral}
-                    onChange={(e) => setFormData(p => ({ ...p, referral: e.target.value }))}
-                    className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                  >
-                    <option>Social Media (Instagram / Facebook)</option>
-                    <option>Friend / Family Referral</option>
-                    <option>Google Search</option>
-                    <option>Local Newspaper / Banner</option>
-                    <option>Walked Past the Academy</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-300 mb-2">
-                    Message / Special Requirements <span className="text-gray-600 font-medium text-xs">(optional)</span>
-                  </label>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">Full Address</label>
                   <textarea
-                    rows={4}
-                    placeholder="Tell us anything specific — injuries, scheduling constraints, past coaching history…"
-                    value={formData.message}
-                    onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))}
+                    name="address"
+                    rows={3}
+                    placeholder="Enter your full address"
+                    value={formData.address}
+                    onChange={handleChange}
                     className="flex w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50 resize-none"
                   />
                 </div>
               </div>
 
-              {/* Summary banner */}
-              {(selectedBatch || selectedPtPackage) && (
-                <div className={cn(
-                  "p-5 rounded-2xl border flex items-center justify-between gap-4",
-                  trainingType === "personal"
-                    ? "border-academy-red/30 bg-academy-red/5"
-                    : "border-academy-gold/30 bg-academy-gold/5"
-                )}>
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
+                  <Trophy size={12} /> School Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Input
+                    label="School Name"
+                    name="schoolName"
+                    placeholder="Enter school name"
+                    value={formData.schoolName}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Class/Standard"
+                    name="classStandard"
+                    placeholder="Enter class/standard"
+                    value={formData.classStandard}
+                    onChange={handleChange}
+                  />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Selected</p>
-                    <p className="text-sm font-black text-white">
-                      {trainingType === "group"
-                        ? BATCHES.find((b) => b.id === selectedBatch)?.name
-                        : PT_PACKAGES.find((p) => p.id === selectedPtPackage)?.name}
-                    </p>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Board</label>
+                    <select
+                      name="board"
+                      value={formData.board}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select board</option>
+                      <option value="cbse">CBSE</option>
+                      <option value="icse">ICSE</option>
+                      <option value="state">State</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
-                  <span className={cn(
-                    "text-lg font-black",
-                    trainingType === "personal" ? "text-academy-red" : "text-academy-gold"
-                  )}>
-                    {trainingType === "group"
-                      ? BATCHES.find((b) => b.id === selectedBatch)?.fee
-                      : PT_PACKAGES.find((p) => p.id === selectedPtPackage)?.fee}
-                  </span>
                 </div>
-              )}
+              </div>
 
-              {/* Submit */}
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
+                  <Star size={12} /> Cricket Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Playing Role</label>
+                    <select
+                      name="playingRole"
+                      value={formData.playingRole}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select role</option>
+                      <option value="batsman">Batsman</option>
+                      <option value="bowler">Bowler</option>
+                      <option value="allrounder">All-rounder</option>
+                      <option value="wicketkeeper">Wicketkeeper</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Batting Style</label>
+                    <select
+                      name="battingStyle"
+                      value={formData.battingStyle}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select style</option>
+                      <option value="rightHanded">Right-handed</option>
+                      <option value="leftHanded">Left-handed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Bowling Style</label>
+                    <select
+                      name="bowlingStyle"
+                      value={formData.bowlingStyle}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select style</option>
+                      <option value="rightArmFast">Right-arm Fast</option>
+                      <option value="leftArmFast">Left-arm Fast</option>
+                      <option value="rightArmSpin">Right-arm Spin</option>
+                      <option value="leftArmSpin">Left-arm Spin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">Previous Experience?</label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="previousExperience"
+                        value="no"
+                        checked={formData.previousExperience === "no"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                      />
+                      <span className="text-sm text-gray-300">No</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="previousExperience"
+                        value="yes"
+                        checked={formData.previousExperience === "yes"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                      />
+                      <span className="text-sm text-gray-300">Yes</span>
+                    </label>
+                  </div>
+                </div>
+
+                {formData.previousExperience === "yes" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                      label="Previous Academy Name"
+                      name="previousAcademy"
+                      placeholder="Enter academy name"
+                      value={formData.previousAcademy}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="Years of Experience"
+                      name="experienceYears"
+                      type="number"
+                      placeholder="Enter years"
+                      value={formData.experienceYears}
+                      onChange={handleChange}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">Preferred Batch Timing</label>
+                  <select
+                    name="preferredBatchTiming"
+                    value={formData.preferredBatchTiming}
+                    onChange={handleChange}
+                    className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                  >
+                    <option value="">Select timing</option>
+                    <option value="morning">Morning</option>
+                    <option value="afternoon">Afternoon</option>
+                    <option value="evening">Evening</option>
+                    <option value="weekend">Weekend</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 flex items-center gap-2 pb-3 border-b border-white/5">
+                  <Mail size={12} /> Additional Information
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">How did you hear about us?</label>
+                  <select
+                    name="howHearAboutUs"
+                    value={formData.howHearAboutUs}
+                    onChange={handleChange}
+                    className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                  >
+                    <option value="">Select source</option>
+                    <option value="socialMedia">Social Media</option>
+                    <option value="referral">Friend/Family Referral</option>
+                    <option value="google">Google Search</option>
+                    <option value="banner">Banner/Poster</option>
+                    <option value="walkIn">Walk-in</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">Any Medical Conditions?</label>
+                  <div className="flex gap-6 mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medicalConditions"
+                        value="no"
+                        checked={formData.medicalConditions === "no"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                      />
+                      <span className="text-sm text-gray-300">No</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medicalConditions"
+                        value="yes"
+                        checked={formData.medicalConditions === "yes"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                      />
+                      <span className="text-sm text-gray-300">Yes</span>
+                    </label>
+                  </div>
+                  {formData.medicalConditions === "yes" && (
+                    <textarea
+                      name="medicalDetails"
+                      rows={2}
+                      placeholder="Please provide details"
+                      value={formData.medicalDetails}
+                      onChange={handleChange}
+                      className="flex w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50 resize-none"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="privacyPolicyAccepted"
+                      checked={formData.privacyPolicyAccepted}
+                      onChange={handleChange}
+                      className="w-5 h-5 mt-0.5 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50 rounded"
+                      required
+                    />
+                    <span className="text-sm text-gray-300">
+                      I accept the <span className="text-academy-gold">Privacy Policy</span> and consent to my
+                      data being stored and processed.
+                    </span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Message / Special Requirements <span className="text-gray-600 font-medium text-xs">(optional)</span>
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={3}
+                    placeholder="Tell us anything specific"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="flex w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50 resize-none"
+                  />
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 variant="primary"
@@ -614,37 +709,8 @@ export default function AdmissionPage() {
               >
                 {isSubmitting ? "Submitting..." : "Submit Application"} <Send className="ml-3" size={20} />
               </Button>
-
-              <p className="text-center text-[10px] text-gray-600 font-medium">
-                By submitting you agree to be contacted by our team. No payment required at this stage.
-              </p>
             </form>
           </Card>
-        </div>
-      </section>
-
-      {/* Why join strip */}
-      <section className="py-20 px-6 border-t border-white/5 bg-academy-gray/20">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-center text-3xl font-black uppercase tracking-tight mb-12">
-            Why Choose <span className="text-academy-red">Samarth</span>?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Trophy, title: "Expert Coaches", desc: "Certified coaches with domestic playing experience and 10+ years of structured coaching." },
-              { icon: Target, title: "Personal Attention", desc: "Small batch sizes ensure every player receives focused, individualised coaching." },
-              { icon: Dumbbell, title: "Quality Facilities", desc: "Turf pitches, bowling machines, video analysis support, and fitness training." },
-              { icon: Star, title: "Proven Track Record", desc: "50+ players selected for district and state-level tournaments over the last 3 seasons." },
-            ].map((item, i) => (
-              <div key={i} className="text-center p-6">
-                <div className="w-14 h-14 rounded-2xl bg-academy-red/10 border border-academy-red/20 flex items-center justify-center mx-auto mb-5 text-academy-red">
-                  <item.icon size={24} />
-                </div>
-                <h3 className="text-sm font-black uppercase tracking-tight mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-xs font-medium leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

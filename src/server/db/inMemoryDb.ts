@@ -41,9 +41,27 @@ export interface DbMembership {
 export interface DbEnquiry {
   id: DbId;
   name: string;
+  date_of_birth?: string;
+  gender?: string;
   phone: string;
+  parent_name?: string;
+  parent_phone?: string;
   email?: string;
+  address?: string;
+  school_name?: string;
+  class_standard?: string;
+  board?: string;
+  playing_role?: string;
+  batting_style?: string;
+  bowling_style?: string;
+  previous_experience?: string;
+  previous_experience_details?: string;
   branch_id: BranchId;
+  preferred_batch_timing?: string;
+  how_hear_about_us?: string;
+  medical_conditions?: string;
+  medical_conditions_details?: string;
+  privacy_policy_accepted: boolean;
   message: string;
   type: "personal_training" | "admission" | "contact";
   status: "normal" | "waiting" | "contacted" | "assigned";
