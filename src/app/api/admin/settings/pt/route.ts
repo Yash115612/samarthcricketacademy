@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import { settings } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,17 @@ export async function GET() {
   }
 
   const branchId = getAdminBranchId();
-  const s = settings.get(branchId);
+  const { data: s, error } = await adminClient
+    .from("branch_settings")
+    .select("*")
+    .eq("branch_id", branchId)
+    .single();
+  
+  if (error) {
+    console.error("Error fetching settings:", error);
+    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+  }
+  
   return NextResponse.json({ ok: true, settings: s });
 }
 
@@ -34,6 +44,17 @@ export async function POST(req: Request) {
 
   if (!body) return NextResponse.json({ ok: false, error: "INVALID_JSON" }, { status: 400 });
 
-  const updated = settings.update(branchId, body);
+  const { data: updated, error } = await adminClient
+    .from("branch_settings")
+    .update(body)
+    .eq("branch_id", branchId)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error("Error updating settings:", error);
+    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+  }
+  
   return NextResponse.json({ ok: true, settings: updated });
 }

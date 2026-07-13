@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
+import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
-import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+import { genId } from "@/lib/utils";
 
 export async function GET() {
   const branchId = getAdminBranchId();
-  const { data: staffList, error } = await supabase
+  const { data: staffList, error } = await adminClient
     .from("users")
     .select("*")
     .eq("branch_id", branchId)
@@ -35,7 +30,7 @@ export async function POST(req: Request) {
   }
   
   // Check if email already exists
-  const { data: existingUser } = await supabase
+  const { data: existingUser } = await adminClient
     .from("users")
     .select("id")
     .eq("email", email)
@@ -48,13 +43,12 @@ export async function POST(req: Request) {
   // Hash password
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(password, saltRounds);
-  const newId = crypto.randomUUID();
   
   // Insert into users table
-  const { data: newStaff, error: insertError } = await supabase
+  const { data: newStaff, error: insertError } = await adminClient
     .from("users")
     .insert({
-      id: newId,
+      id: genId("s"),
       name,
       email,
       phone,

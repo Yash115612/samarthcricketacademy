@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import { enquiries } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
 
 export async function GET(req: Request) {
@@ -11,6 +11,16 @@ export async function GET(req: Request) {
   }
 
   const branchId = getAdminBranchId();
-  const list = enquiries.list(branchId);
+  const { data: list, error } = await adminClient
+    .from("enquiries")
+    .select("*")
+    .eq("branch_id", branchId)
+    .order("created_at", { ascending: false });
+  
+  if (error) {
+    console.error("Error fetching enquiries:", error);
+    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+  }
+  
   return NextResponse.json({ ok: true, enquiries: list });
 }

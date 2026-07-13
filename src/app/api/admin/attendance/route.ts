@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { attendance, users } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
 import { BATCHES } from "@/data/batches";
+import { genId } from "@/lib/utils";
 
 export async function GET(req: Request) {
   try {
@@ -13,8 +14,28 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: "DATE_REQUIRED" }, { status: 400 });
     }
 
-    const attendanceList = attendance.listByBranchAndDate(branchId, date);
-    const players = users.listByBranch(branchId);
+    const { data: attendanceList, error: attError } = await adminClient
+      .from("attendances")
+      .select("*")
+      .eq("branch_id", branchId)
+      .eq("date", date);
+    
+    if (attError) {
+      console.error("Attendance GET error:", attError);
+      return NextResponse.json({ ok: false, error: "DB_ERROR" }, { status: 500 });
+    }
+
+    const { data: players, error: usersError } = await adminClient
+      .from("users")
+      .select("*")
+      .eq("branch_id", branchId)
+      .eq("role", "player");
+    
+    if (usersError) {
+      console.error("Players GET error:", usersError);
+      return NextResponse.json({ ok: false, error: "DB_ERROR" }, { status: 500 });
+    }
+
     const branchBatches = BATCHES.filter(b => b.branch_id === branchId);
 
     return NextResponse.json({ 
@@ -40,12 +61,33 @@ export async function POST(req: Request) {
     }
 
     for (const record of records) {
-      await attendance.mark({
-        user_id: record.user_id,
-        branch_id: branchId,
-        date,
-        status: record.status
-      });
+      // Check if exists first
+      const { data: existing } = await adminClient
+        .from("attendances")
+        .select("id")
+        .eq("user_id", record.user_id)
+        .eq("branch_id", branchId)
+        .eq("date", date)
+        .maybeSingle();
+
+      if (existing) {
+        // Update
+        await adminClient
+          .from("attendances")
+          .update({ status: record.status })
+          .eq("id", existing.id);
+      } else {
+        // Insert
+        await adminClient
+          .from("attendances")
+          .insert({
+            id: genId("att"),
+            user_id: record.user_id,
+            branch_id: branchId,
+            date,
+            status: record.status
+          });
+      }
     }
 
     return NextResponse.json({ ok: true });

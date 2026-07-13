@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { staffAttendance, staff } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
+import { genId } from "@/lib/utils";
 
 export async function GET(req: Request) {
   try {
@@ -12,8 +13,27 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: "DATE_REQUIRED" }, { status: 400 });
     }
 
-    const attendanceList = staffAttendance.listByBranchAndDate(branchId, date);
-    const branchStaff = staff.listByBranch(branchId);
+    const { data: attendanceList, error: attError } = await adminClient
+      .from("staff_attendance")
+      .select("*")
+      .eq("branch_id", branchId)
+      .eq("date", date);
+    
+    if (attError) {
+      console.error("Staff Attendance GET error:", attError);
+      return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+    }
+
+    const { data: branchStaff, error: staffError } = await adminClient
+      .from("users")
+      .select("*")
+      .eq("branch_id", branchId)
+      .eq("role", "staff");
+    
+    if (staffError) {
+      console.error("Staff GET error:", staffError);
+      return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+    }
 
     return NextResponse.json({ 
       ok: true, 
@@ -37,12 +57,31 @@ export async function POST(req: Request) {
     }
 
     for (const record of records) {
-      await staffAttendance.mark({
-        staff_id: record.staff_id,
-        branch_id: branchId,
-        date,
-        status: record.status
-      });
+      // Check if exists first
+      const { data: existing } = await adminClient
+        .from("staff_attendance")
+        .select("id")
+        .eq("staff_id", record.staff_id)
+        .eq("branch_id", branchId)
+        .eq("date", date)
+        .maybeSingle();
+
+      if (existing) {
+        await adminClient
+          .from("staff_attendance")
+          .update({ status: record.status })
+          .eq("id", existing.id);
+      } else {
+        await adminClient
+          .from("staff_attendance")
+          .insert({
+            id: genId("satt"),
+            staff_id: record.staff_id,
+            branch_id: branchId,
+            date,
+            status: record.status
+          });
+      }
     }
 
     return NextResponse.json({ ok: true });

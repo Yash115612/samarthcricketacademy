@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scoringSessions, ballsDb } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import { computeScorecard } from "@/lib/cricket";
 
 export async function GET(req: Request) {
@@ -7,11 +7,21 @@ export async function GET(req: Request) {
   const matchId = searchParams.get("matchId");
   if (!matchId) return NextResponse.json({ ok: false, error: "matchId required" }, { status: 400 });
 
-  const session = scoringSessions.getByMatchId(matchId);
+  const { data: session } = await adminClient
+    .from("scoring_sessions")
+    .select("*")
+    .eq("match_id", matchId)
+    .maybeSingle();
+
   if (!session) return NextResponse.json({ ok: true, has_scoring: false, scorecard: null });
 
-  const balls = ballsDb.listByMatch(matchId, session.innings);
-  const scorecard = computeScorecard(session, balls);
+  const { data: balls } = await adminClient
+    .from("balls")
+    .select("*")
+    .eq("match_id", matchId)
+    .eq("innings", session.innings);
+
+  const scorecard = computeScorecard(session, balls || []);
 
   return NextResponse.json(
     { ok: true, has_scoring: true, scorecard },

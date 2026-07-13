@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import {
-  users, memberships, paymentVerifications, enquiries, transactions,
-} from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import type { BranchId } from "@/types/dashboard";
 import * as XLSX from "xlsx";
 
@@ -37,22 +35,37 @@ export async function GET(req: Request) {
   const type = searchParams.get("type") || "all";
   const branchId = (searchParams.get("branch") || "samarth") as BranchId;
   const branch = branchId === "samarth" ? "Samarth" : "AIMS";
-  const date = new Date().toISOString().slice(0, 10);
 
-  // ── Build data arrays ─────────────────────────────────────────────────────
+  // Fetch all data
+  const [
+    { data: allUsers },
+    { data: memberships },
+    { data: paymentVerifications },
+    { data: enquiries },
+    { data: transactions }
+  ] = await Promise.all([
+    adminClient.from("users").select("*").eq("branch_id", branchId),
+    adminClient.from("memberships").select("*").eq("branch_id", branchId),
+    adminClient.from("payment_verifications").select("*").eq("branch_id", branchId),
+    adminClient.from("enquiries").select("*").eq("branch_id", branchId),
+    adminClient.from("transactions").select("*").eq("branch_id", branchId),
+  ]);
 
-  const clientRows: Row[] = users.listByBranch(branchId).map((u) => ({
+  const usersMap = new Map((allUsers || []).map(u => [u.id, u]));
+
+  // Build data arrays
+  const clientRows: Row[] = (allUsers || []).map((u) => ({
     "Name": u.name,
     "Email": u.email,
     "Phone": u.phone || "-",
     "Branch": u.branch_id || "-",
     "Membership Status": u.membership_status,
     "Role": u.role,
-    "Profile Complete": u.isProfileComplete ? "Yes" : "No",
+    "Profile Complete": u.is_profile_complete ? "Yes" : "No",
   }));
 
-  const membershipRows: Row[] = memberships.listByBranch(branchId).map((m) => {
-    const user = users.getById(m.user_id);
+  const membershipRows: Row[] = (memberships || []).map((m) => {
+    const user = usersMap.get(m.user_id);
     return {
       "Player Name": user?.name || m.user_id,
       "Email": user?.email || "-",
@@ -66,7 +79,7 @@ export async function GET(req: Request) {
     };
   });
 
-  const revenueRows: Row[] = paymentVerifications.list(branchId).map((p) => ({
+  const revenueRows: Row[] = (paymentVerifications || []).map((p) => ({
     "Player Name": p.name,
     "Email": p.email,
     "Phone": p.phone,
@@ -79,7 +92,7 @@ export async function GET(req: Request) {
     "Branch": p.branch_id,
   }));
 
-  const txRows: Row[] = transactions.listByBranch(branchId).map((t) => ({
+  const txRows: Row[] = (transactions || []).map((t) => ({
     "Type": t.type,
     "Category": t.category,
     "Player / Description": t.player,
@@ -89,7 +102,7 @@ export async function GET(req: Request) {
     "Branch": t.branch_id,
   }));
 
-  const enquiryRows: Row[] = enquiries.list(branchId).map((e) => ({
+  const enquiryRows: Row[] = (enquiries || []).map((e) => ({
     "Name": e.name,
     "Phone": e.phone,
     "Email": e.email || "-",
@@ -100,8 +113,7 @@ export async function GET(req: Request) {
     "Branch": e.branch_id,
   }));
 
-  // ── Build workbook ────────────────────────────────────────────────────────
-
+  // Build workbook
   const wb = XLSX.utils.book_new();
   let filename: string;
 
@@ -111,7 +123,7 @@ export async function GET(req: Request) {
     XLSX.utils.book_append_sheet(wb, makeSheet(revenueRows), "Revenue");
     XLSX.utils.book_append_sheet(wb, makeSheet(txRows), "Transactions");
     XLSX.utils.book_append_sheet(wb, makeSheet(enquiryRows), "Enquiries");
-    filename = `${branch}_Full_Report_${date}.xlsx`;
+    filename = `${branch}_Full_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
   } else {
     const sheetMap: Record<string, { rows: Row[]; name: string }> = {
       clients:      { rows: clientRows,     name: "Clients" },
@@ -125,7 +137,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: "UNKNOWN_TYPE" }, { status: 400 });
     }
     XLSX.utils.book_append_sheet(wb, makeSheet(entry.rows), entry.name);
-    filename = `${branch}_${entry.name}_${date}.xlsx`;
+    filename = `${branch}_${entry.name}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   }
 
   const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });

@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { adminClient } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -19,7 +13,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       updateData.password_hash = await bcrypt.hash(password, saltRounds);
     }
     
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await adminClient
       .from("users")
       .update(updateData)
       .eq("id", params.id)
@@ -38,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const { error } = await supabase
+  const { error } = await adminClient
     .from("users")
     .delete()
     .eq("id", params.id);

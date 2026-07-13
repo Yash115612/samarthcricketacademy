@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { settings } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 import type { BranchId } from "@/types/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -8,19 +8,30 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const branchId = (searchParams.get("branch") as BranchId) || "samarth";
 
-  // Fall back to samarth settings if the requested branch has no payment config
-  const s = settings.get(branchId) || settings.get("samarth");
-  if (!s) {
-    return NextResponse.json({ ok: false, error: "BRANCH_NOT_FOUND" }, { status: 404 });
+  const { data: s, error } = await adminClient
+    .from("branch_settings")
+    .select("*")
+    .eq("branch_id", branchId)
+    .maybeSingle();
+
+  const fallbackSettings = s || {
+    payment_qr_url: "",
+    payment_upi_id: "",
+    payment_instructions: [],
+  };
+
+  if (error && !s) {
+    console.error("Error fetching settings:", error);
+    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
   }
 
   return NextResponse.json(
     {
       ok: true,
       settings: {
-        payment_qr_url: s.payment_qr_url || "",
-        payment_upi_id: s.payment_upi_id || "",
-        payment_instructions: s.payment_instructions || [],
+        payment_qr_url: fallbackSettings.payment_qr_url || "",
+        payment_upi_id: fallbackSettings.payment_upi_id || "",
+        payment_instructions: fallbackSettings.payment_instructions || [],
       },
     },
     {

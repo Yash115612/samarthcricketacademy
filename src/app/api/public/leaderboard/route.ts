@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
-import { users, performance, matchParticipants, matches } from "@/server/db/inMemoryDb";
+import { adminClient } from "@/lib/supabase";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const branch = (searchParams.get("branch") || "samarth") as "samarth" | "aims";
 
-  const allUsers = users.listByBranch(branch);
+  // Fetch all data
+  const [
+    { data: allUsers },
+    { data: performance },
+    { data: matchParticipants },
+    { data: matches }
+  ] = await Promise.all([
+    adminClient.from("users").select("*").eq("branch_id", branch),
+    adminClient.from("performance").select("*").eq("branch_id", branch),
+    adminClient.from("match_participants").select("*").eq("branch_id", branch),
+    adminClient.from("matches").select("*").eq("branch_id", branch),
+  ]);
 
   // Aggregate performance per player
   const stats: Record<
@@ -13,24 +24,37 @@ export async function GET(req: Request) {
     { name: string; matches: number; runs: number; wickets: number; userId: string }
   > = {};
 
-  for (const user of allUsers) {
-    const perfs = performance.listByUserBranch(user.id, branch);
-    const matchCount = matchParticipants.listForUser(user.id).filter((p) => {
-      const m = matches.getById(p.match_id);
-      return m && m.branch_id === branch && m.status === "Completed";
-    }).length;
-
-    const totalRuns = perfs.reduce((s, p) => s + p.runs, 0);
-    const totalWickets = perfs.reduce((s, p) => s + p.wickets, 0);
-
+  // Initialize stats for all users
+  (allUsers || []).forEach(user => {
     stats[user.id] = {
       name: user.name,
       userId: user.id,
-      matches: Math.max(matchCount, perfs.length),
-      runs: totalRuns,
-      wickets: totalWickets,
+      matches: 0,
+      runs: 0,
+      wickets: 0
     };
-  }
+  });
+
+  // Sum performance
+  (performance || []).forEach(p => {
+    if (stats[p.user_id]) {
+      stats[p.user_id].runs += p.runs;
+      stats[p.user_id].wickets += p.wickets;
+    }
+  });
+
+  // Count completed matches per user
+  const completedMatchIds = new Set(
+    (matches || [])
+      .filter(m => m.status === "Completed")
+      .map(m => m.id)
+  );
+
+  (matchParticipants || []).forEach(mp => {
+    if (stats[mp.user_id] && completedMatchIds.has(mp.match_id)) {
+      stats[mp.user_id].matches++;
+    }
+  });
 
   const rows = Object.values(stats);
 
@@ -81,9 +105,9 @@ export async function GET(req: Request) {
   return NextResponse.json({
     ok: true,
     hasData: rows.some((r) => r.runs > 0 || r.wickets > 0),
-    Overall: overall,
-    Batsman: batsman,
-    Bowler: bowler,
-    "All-rounder": allRounder,
+    overall,
+    batsman,
+    bowler,
+    allRounder,
   });
 }
