@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import { paymentVerifications } from "@/server/db/inMemoryDb";
-import { getAdminBranchId } from "@/server/branch";
+import { adminClient } from "@/lib/supabase";
 import type { BranchId } from "@/types/dashboard";
 
 export async function GET(req: Request) {
@@ -14,7 +13,18 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const branchId = searchParams.get("branch") as BranchId | "all" | null;
   
-  // If no branch specified, default to "all" to ensure admin sees everything
-  const list = paymentVerifications.list(branchId || "all");
-  return NextResponse.json({ ok: true, payments: list });
+  let query = adminClient.from("payment_verifications").select("*");
+  
+  if (branchId && branchId !== "all") {
+    query = query.eq("branch_id", branchId);
+  }
+  
+  const { data: list, error } = await query.order("created_at", { ascending: false });
+  
+  if (error) {
+    console.error("Error fetching payments:", error);
+    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
+  }
+  
+  return NextResponse.json({ ok: true, payments: list || [] });
 }
