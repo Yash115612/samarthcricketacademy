@@ -251,7 +251,7 @@ export const Navbar = () => {
 
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden text-white z-[60] p-2 bg-white/5 rounded-xl border border-white/10"
+        className="lg:hidden text-white z-[60] p-3 bg-white/5 rounded-xl border border-white/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}

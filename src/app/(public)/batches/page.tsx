@@ -404,32 +404,32 @@ function BatchesPageContent() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Gender</label>
-                        <select
-                          name="gender"
-                          value={formData.gender}
-                          onChange={handleChange}
-                          className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                          required
-                        >
-                          <option value="">Select gender</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Branch</label>
-                        <select
-                          value={selectedBranch}
-                          onChange={(e) => setSelectedBranch(e.target.value as BranchId)}
-                          className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                          required
-                        >
-                          <option value="samarth">Samarth Cricket Academy (Mira Bhayander)</option>
-                          <option value="aims">AIMS Academy</option>
-                        </select>
-                      </div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Gender</label>
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                      required
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Branch</label>
+                    <select
+                      value={selectedBranch}
+                      onChange={(e) => setSelectedBranch(e.target.value as BranchId)}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                      required
+                    >
+                      <option value="samarth">Samarth Cricket Academy (Mira Bhayander)</option>
+                      <option value="aims">AIMS Academy</option>
+                    </select>
+                  </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <Input
@@ -526,48 +526,48 @@ function BatchesPageContent() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Playing Role</label>
-                        <select
-                          name="playingRole"
-                          value={formData.playingRole}
-                          onChange={handleChange}
-                          className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                        >
-                          <option value="">Select role</option>
-                          <option value="batsman">Batsman</option>
-                          <option value="bowler">Bowler</option>
-                          <option value="allrounder">All-rounder</option>
-                          <option value="wicketkeeper">Wicketkeeper</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Batting Style</label>
-                        <select
-                          name="battingStyle"
-                          value={formData.battingStyle}
-                          onChange={handleChange}
-                          className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                        >
-                          <option value="">Select style</option>
-                          <option value="rightHanded">Right-handed</option>
-                          <option value="leftHanded">Left-handed</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Bowling Style</label>
-                        <select
-                          name="bowlingStyle"
-                          value={formData.bowlingStyle}
-                          onChange={handleChange}
-                          className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                        >
-                          <option value="">Select style</option>
-                          <option value="rightArmFast">Right-arm Fast</option>
-                          <option value="leftArmFast">Left-arm Fast</option>
-                          <option value="rightArmSpin">Right-arm Spin</option>
-                          <option value="leftArmSpin">Left-arm Spin</option>
-                        </select>
-                      </div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Playing Role</label>
+                    <select
+                      name="playingRole"
+                      value={formData.playingRole}
+                      onChange={handleChange}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select role</option>
+                      <option value="batsman">Batsman</option>
+                      <option value="bowler">Bowler</option>
+                      <option value="allrounder">All-rounder</option>
+                      <option value="wicketkeeper">Wicketkeeper</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Batting Style</label>
+                    <select
+                      name="battingStyle"
+                      value={formData.battingStyle}
+                      onChange={handleChange}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select style</option>
+                      <option value="rightHanded">Right-handed</option>
+                      <option value="leftHanded">Left-handed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Bowling Style</label>
+                    <select
+                      name="bowlingStyle"
+                      value={formData.bowlingStyle}
+                      onChange={handleChange}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select style</option>
+                      <option value="rightArmFast">Right-arm Fast</option>
+                      <option value="leftArmFast">Left-arm Fast</option>
+                      <option value="rightArmSpin">Right-arm Spin</option>
+                      <option value="leftArmSpin">Left-arm Spin</option>
+                    </select>
+                  </div>
                     </div>
 
                     <div>
@@ -580,7 +580,7 @@ function BatchesPageContent() {
                             value="no"
                             checked={formData.previousExperience === "no"}
                             onChange={handleChange}
-                            className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                            className="w-6 h-6 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
                           />
                           <span className="text-sm text-gray-300">No</span>
                         </label>
@@ -591,7 +591,7 @@ function BatchesPageContent() {
                             value="yes"
                             checked={formData.previousExperience === "yes"}
                             onChange={handleChange}
-                            className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                            className="w-6 h-6 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
                           />
                           <span className="text-sm text-gray-300">Yes</span>
                         </label>
@@ -624,7 +624,7 @@ function BatchesPageContent() {
                         name="preferredBatchTiming"
                         value={formData.preferredBatchTiming}
                         onChange={handleChange}
-                        className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                        className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
                       >
                         <option value="">Select timing</option>
                         <option value="morning">Morning</option>
@@ -642,22 +642,22 @@ function BatchesPageContent() {
                     </h3>
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-2">How did you hear about us?</label>
-                      <select
-                        name="howHearAboutUs"
-                        value={formData.howHearAboutUs}
-                        onChange={handleChange}
-                        className="flex h-10 w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
-                      >
-                        <option value="">Select source</option>
-                        <option value="socialMedia">Social Media</option>
-                        <option value="referral">Friend/Family Referral</option>
-                        <option value="google">Google Search</option>
-                        <option value="banner">Banner/Poster</option>
-                        <option value="walkIn">Walk-in</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">How did you hear about us?</label>
+                    <select
+                      name="howHearAboutUs"
+                      value={formData.howHearAboutUs}
+                      onChange={handleChange}
+                      className="flex min-h-[44px] w-full rounded-md border border-white/10 bg-academy-gray px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-academy-gold/50"
+                    >
+                      <option value="">Select source</option>
+                      <option value="socialMedia">Social Media</option>
+                      <option value="referral">Friend/Family Referral</option>
+                      <option value="google">Google Search</option>
+                      <option value="banner">Banner/Poster</option>
+                      <option value="walkIn">Walk-in</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
 
                     <div>
                       <label className="block text-sm font-bold text-gray-300 mb-2">Any Medical Conditions?</label>
@@ -669,7 +669,7 @@ function BatchesPageContent() {
                             value="no"
                             checked={formData.medicalConditions === "no"}
                             onChange={handleChange}
-                            className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                            className="w-6 h-6 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
                           />
                           <span className="text-sm text-gray-300">No</span>
                         </label>
@@ -680,7 +680,7 @@ function BatchesPageContent() {
                             value="yes"
                             checked={formData.medicalConditions === "yes"}
                             onChange={handleChange}
-                            className="w-4 h-4 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
+                            className="w-6 h-6 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50"
                           />
                           <span className="text-sm text-gray-300">Yes</span>
                         </label>
@@ -704,7 +704,7 @@ function BatchesPageContent() {
                           name="privacyPolicyAccepted"
                           checked={formData.privacyPolicyAccepted}
                           onChange={handleChange}
-                          className="w-5 h-5 mt-0.5 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50 rounded"
+                          className="w-6 h-6 mt-0.5 text-academy-gold bg-academy-gray border-white/10 focus:ring-academy-gold/50 rounded"
                           required
                         />
                         <span className="text-sm text-gray-300">
