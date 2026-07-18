@@ -8,7 +8,7 @@ declare module "next-auth" {
       image?: string | null;
       user_id?: string;
       branch_id?: "samarth" | "aims" | null;
-      role?: "player" | "admin" | "staff";
+      role?: "player" | "admin";
       isProfileComplete?: boolean;
       membership_status?: string;
       permissions?: {

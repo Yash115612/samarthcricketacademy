@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare,
-  UserSquare, Trophy, BarChart3, Clock, Image as ImageIcon,
+  Trophy, BarChart3, Clock, Image as ImageIcon,
   Gift, Bell, ShoppingBag, Share2, Target,
   ChevronDown, Menu, X, LogOut, Settings,
   Globe, Wallet, BadgeCheck, Home, CalendarCheck
@@ -28,7 +28,6 @@ const SIDEBAR_GROUPS = [
     label: "People",
     items: [
       { label: "Clients", href: "/admin/clients", icon: Users },
-      { label: "Staff", href: "/admin/staff", icon: UserSquare },
       { label: "Coaches", href: "/admin/coaches", icon: Trophy }
     ]
   },

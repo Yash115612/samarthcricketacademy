@@ -78,50 +78,6 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
-    // Staff login using credentials
-    CredentialsProvider({
-      id: "staff-credentials",
-      name: "Staff Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const email = (credentials?.email ?? "").trim().toLowerCase();
-        const password = credentials?.password ?? "";
-        if (!email || !password) return null;
-
-        const { data: staffUser } = await supabase
-          .from("users")
-          .select("*")
-          .eq("email", email)
-          .eq("role", "staff")
-          .maybeSingle();
-
-        if (!staffUser || !staffUser.password_hash) return null;
-
-        const passwordValid = await bcrypt.compare(password, staffUser.password_hash);
-        if (!passwordValid) return null;
-
-        return {
-          id: staffUser.id,
-          name: staffUser.name,
-          email: staffUser.email,
-          role: staffUser.role,
-          branch_id: staffUser.branch_id,
-          isProfileComplete: staffUser.is_profile_complete,
-          membership_status: staffUser.membership_status,
-          permissions: staffUser.permissions || {
-            manageFees: false,
-            manageClients: false,
-            manageAttendance: false,
-            manageMatches: false,
-            manageEnquiries: false
-          }
-        } as any;
-      },
-    }),
-
     // Player login using credentials
     CredentialsProvider({
       id: "credentials",

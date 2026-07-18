@@ -7,9 +7,8 @@ export default async function middleware(req: NextRequest) {
   const pathname = nextUrl.pathname;
 
   // Determine which sign-in page to use
-  const isAdminOrStaffRoute =
+  const isAdminRoute =
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/staff") ||
     pathname.startsWith("/api/admin");
 
   const authMiddleware = withAuth(
@@ -21,10 +20,6 @@ export default async function middleware(req: NextRequest) {
 
           if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
             return token?.role === "admin";
-          }
-
-          if (pathname.startsWith("/staff")) {
-            return token?.role === "staff";
           }
 
           if (pathname.startsWith("/dashboard") || pathname.startsWith("/api/player") || pathname.startsWith("/api/membership/submit")) {
@@ -43,9 +38,9 @@ export default async function middleware(req: NextRequest) {
   // @ts-ignore
   const response = await authMiddleware(req);
 
-  // If it's a redirect to sign-in, and we're on admin/staff route, redirect to /signin/admin instead
+  // If it's a redirect to sign-in, and we're on an admin route, redirect to /signin/admin instead
   if (response instanceof NextResponse && response.headers.get("Location")?.includes("/signin")) {
-    if (isAdminOrStaffRoute) {
+    if (isAdminRoute) {
       const url = nextUrl.clone();
       url.pathname = "/signin/admin";
       return NextResponse.redirect(url);
@@ -59,7 +54,6 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/api/admin/:path*",
-    "/staff/:path*",
     "/dashboard/:path*",
     "/api/player/:path*",
     "/api/membership/submit",
