@@ -43,6 +43,8 @@ export default function StaffPage() {
     }
   });
 
+  const getDisplayRole = (staff: any) => staff?.permissions?.staffRole || staff?.role || "";
+
   const loadStaff = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
@@ -142,7 +144,7 @@ export default function StaffPage() {
     setSelectedStaff(staff);
     setFormData({
       name: staff.name,
-      role: staff.role,
+      role: getDisplayRole(staff),
       email: staff.email,
       phone: staff.phone,
       experience: staff.experience,
@@ -173,27 +175,64 @@ export default function StaffPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        name: formData.name.trim(),
+        role: formData.role.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+        experience: formData.experience.trim(),
+      };
+
+      if (
+        !payload.name ||
+        !payload.role ||
+        !payload.email ||
+        !payload.phone ||
+        !payload.experience ||
+        (!isEditMode && !payload.password.trim())
+      ) {
+        console.error("Staff form validation failed", {
+          isEditMode,
+          payload,
+        });
+        alert("Please fill in all required staff fields before saving.");
+        return;
+      }
+
       const url = isEditMode ? `/api/admin/staff/${selectedStaff.id}` : "/api/admin/staff";
       const method = isEditMode ? "PATCH" : "POST";
       
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
+      if (!res.ok || !data.ok) {
+        console.error("Failed to save staff", {
+          status: res.status,
+          url,
+          method,
+          response: data,
+        });
+        alert(data.message || "Failed to save staff.");
+        return;
+      }
+
       if (data.ok) {
         setIsModalOpen(false);
         loadStaff();
       }
     } catch (err) {
-      console.error("Failed to save staff");
+      console.error("Failed to save staff", err);
+      alert("Failed to save staff.");
     }
   };
 
   const filteredStaff = staffList.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.role.toLowerCase().includes(searchQuery.toLowerCase())
+    getDisplayRole(s).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -241,8 +280,8 @@ export default function StaffPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { label: "Total Staff", value: filteredStaff.length.toString(), icon: UserSquare, color: "text-blue-500" },
-              { label: "Certified Coaches", value: filteredStaff.filter(s => s.role.includes("Coach")).length.toString(), icon: Star, color: "text-academy-gold" },
-              { label: "Admin Staff", value: filteredStaff.filter(s => !s.role.includes("Coach")).length.toString(), icon: Shield, color: "text-emerald-500" },
+              { label: "Certified Coaches", value: filteredStaff.filter(s => getDisplayRole(s).includes("Coach")).length.toString(), icon: Star, color: "text-academy-gold" },
+              { label: "Admin Staff", value: filteredStaff.filter(s => !getDisplayRole(s).includes("Coach")).length.toString(), icon: Shield, color: "text-emerald-500" },
             ].map((stat, i) => (
               <Card key={i} className="p-6 border-white/5 bg-academy-gray/30 backdrop-blur-md">
                 <div className={cn("w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-4", stat.color)}>
@@ -323,7 +362,7 @@ export default function StaffPage() {
                           </td>
                           <td className="px-6 py-6">
                             <span className="text-[10px] font-black uppercase tracking-widest text-academy-red bg-academy-red/10 px-3 py-1 rounded-full border border-academy-red/20">
-                              {member.role}
+                              {getDisplayRole(member)}
                             </span>
                           </td>
                           <td className="px-6 py-6">
@@ -419,7 +458,7 @@ export default function StaffPage() {
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-                            {member.role}
+                            {getDisplayRole(member)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -555,4 +594,3 @@ export default function StaffPage() {
     </div>
   );
 }
-

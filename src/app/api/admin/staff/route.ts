@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { adminClient } from "@/lib/supabase";
-import { getAdminBranchId } from "@/server/branch";
 import bcrypt from "bcryptjs";
-import { genId } from "@/lib/utils";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getAdminBranchId } from "@/server/branch";
 
 export async function GET() {
   const branchId = getAdminBranchId();
-  const { data: staffList, error } = await adminClient
+  const supabase: any = createAdminClient();
+  const { data: staffList, error } = await supabase
     .from("users")
     .select("*")
     .eq("branch_id", branchId)
@@ -21,53 +21,131 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const branchId = getAdminBranchId();
-  const body = await req.json();
-  const { name, email, password, phone, role: staffRole, experience, permissions, status } = body;
-  
-  if (!email || !password || !name) {
-    return NextResponse.json({ ok: false, error: "MISSING_FIELDS" }, { status: 400 });
-  }
-  
-  // Check if email already exists
-  const { data: existingUser } = await adminClient
-    .from("users")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
-  
-  if (existingUser) {
-    return NextResponse.json({ ok: false, error: "EMAIL_EXISTS", message: "This email is already registered." }, { status: 409 });
-  }
-  
-  // Hash password
-  const saltRounds = 12;
-  const passwordHash = await bcrypt.hash(password, saltRounds);
-  
-  // Insert into users table
-  const { data: newStaff, error: insertError } = await adminClient
-    .from("users")
-    .insert({
-      id: genId("s"),
+  try {
+    const branchId = getAdminBranchId();
+    const supabase: any = createAdminClient();
+    const body = await req.json();
+    const {
       name,
       email,
+      password,
       phone,
-      role: "staff",
-      branch_id: branchId,
-      password_hash: passwordHash,
-      permissions,
+      role: staffRole,
       experience,
-      status: status || "Active",
-      is_profile_complete: true,
-      membership_status: "active"
-    })
-    .select()
-    .single();
-  
-  if (insertError) {
-    console.error("Error creating staff:", insertError);
-    return NextResponse.json({ ok: false, error: "Failed to create staff" }, { status: 500 });
+      permissions,
+    } = body;
+
+    const normalizedEmail = String(email ?? "").trim().toLowerCase();
+    const normalizedName = String(name ?? "").trim();
+    const normalizedPhone = String(phone ?? "").trim();
+    const normalizedStaffRole = String(staffRole ?? "").trim();
+    const normalizedExperience = String(experience ?? "").trim();
+    const normalizedPassword = String(password ?? "");
+
+    if (
+      !normalizedName ||
+      !normalizedEmail ||
+      !normalizedPassword ||
+      !normalizedPhone ||
+      !normalizedStaffRole ||
+      !normalizedExperience
+    ) {
+      console.error("Staff create validation failed", {
+        hasName: !!normalizedName,
+        hasEmail: !!normalizedEmail,
+        hasPassword: !!normalizedPassword,
+        hasPhone: !!normalizedPhone,
+        hasStaffRole: !!normalizedStaffRole,
+        hasExperience: !!normalizedExperience,
+      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "MISSING_FIELDS",
+          message: "Name, role, email, phone, experience, and password are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { data: existingUser, error: existingUserError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    if (existingUserError) {
+      console.error("Error checking existing staff email:", existingUserError);
+      return NextResponse.json(
+        { ok: false, error: "EMAIL_CHECK_FAILED", message: existingUserError.message },
+        { status: 500 }
+      );
+    }
+
+    if (existingUser) {
+      return NextResponse.json(
+        { ok: false, error: "EMAIL_EXISTS", message: "This email is already registered." },
+        { status: 409 }
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(normalizedPassword, 12);
+
+    const nextPermissions = {
+      manageFees: !!permissions?.manageFees,
+      manageClients: !!permissions?.manageClients,
+      manageAttendance: !!permissions?.manageAttendance,
+      manageMatches: !!permissions?.manageMatches,
+      manageEnquiries: !!permissions?.manageEnquiries,
+      staffRole: normalizedStaffRole,
+    };
+
+    const { data: newStaff, error: insertError } = await supabase
+      .from("users")
+      .insert({
+        name: normalizedName,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        role: "staff",
+        branch_id: branchId,
+        password_hash: passwordHash,
+        permissions: nextPermissions,
+        experience: normalizedExperience,
+        is_profile_complete: true,
+        membership_status: "active",
+        failed_attempts: 0,
+        lockout_until: null,
+        google_id: null,
+      })
+      .select()
+      .single();
+
+    if (insertError || !newStaff) {
+      console.error("Error creating staff:", insertError, {
+        branchId,
+        email: normalizedEmail,
+        role: normalizedStaffRole,
+      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "CREATE_STAFF_FAILED",
+          message: insertError?.message ?? "Failed to create staff.",
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, staff: newStaff }, { status: 201 });
+  } catch (error: any) {
+    console.error("Unhandled staff create error:", error);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "FAILED",
+        message: error?.message ?? "Unexpected server error.",
+      },
+      { status: 500 }
+    );
   }
-  
-  return NextResponse.json({ ok: true, staff: newStaff });
 }
