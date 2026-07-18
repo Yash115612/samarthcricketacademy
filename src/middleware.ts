@@ -1,36 +1,59 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    // You can add custom logic here if needed
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
+export default async function middleware(req: NextRequest) {
+  const { nextUrl } = req;
+  const pathname = nextUrl.pathname;
 
-        // Admin routes (pages and APIs) require admin role
-        if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-          return token?.role === "admin";
-        }
+  // Determine which sign-in page to use
+  const isAdminOrStaffRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/staff") ||
+    pathname.startsWith("/api/admin");
 
-        // Staff routes require staff role
-        if (pathname.startsWith("/staff")) {
-          return token?.role === "staff";
-        }
+  const authMiddleware = withAuth(
+    () => NextResponse.next(),
+    {
+      callbacks: {
+        authorized: ({ token, req }) => {
+          const { pathname } = req.nextUrl;
 
-        // Player dashboard (pages and APIs) require at least authenticated
-        if (pathname.startsWith("/dashboard") || pathname.startsWith("/api/player") || pathname.startsWith("/api/membership/submit")) {
-          return !!token;
-        }
+          if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+            return token?.role === "admin";
+          }
 
-        return true;
+          if (pathname.startsWith("/staff")) {
+            return token?.role === "staff";
+          }
+
+          if (pathname.startsWith("/dashboard") || pathname.startsWith("/api/player") || pathname.startsWith("/api/membership/submit")) {
+            return !!token;
+          }
+
+          return true;
+        },
       },
-    },
+      pages: {
+        signIn: "/signin",
+      },
+    }
+  );
+
+  // @ts-ignore
+  const response = await authMiddleware(req);
+
+  // If it's a redirect to sign-in, and we're on admin/staff route, redirect to /signin/admin instead
+  if (response instanceof NextResponse && response.headers.get("Location")?.includes("/signin")) {
+    if (isAdminOrStaffRoute) {
+      const url = nextUrl.clone();
+      url.pathname = "/signin/admin";
+      return NextResponse.redirect(url);
+    }
   }
-);
+
+  return response;
+}
 
 export const config = {
   matcher: [

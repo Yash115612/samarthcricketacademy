@@ -3,15 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Users, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { signIn, useSession } from "next-auth/react";
-
-type LoginTab = "player" | "staff" | "admin";
 
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   NO_MEMBERSHIP: "No approved membership found for this Google account. Please apply for membership first.",
@@ -26,23 +23,13 @@ export default function SignInPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const [tab, setTab] = useState<LoginTab>("player");
-  const [mounted, setMounted] = useState(false);
-
   // Player state
   const [playerEmail, setPlayerEmail] = useState("");
   const [playerPassword, setPlayerPassword] = useState("");
 
-  // Staff state
-  const [staffEmail, setStaffEmail] = useState("");
-  const [staffPassword, setStaffPassword] = useState("");
-
-  // Admin state
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -56,17 +43,11 @@ export default function SignInPage() {
     if (params.has("error")) return;
 
     const callbackUrl = params.get("callbackUrl");
-    const dest = callbackUrl
-      ? callbackUrl
-      : session?.user?.role === "admin"
-      ? "/admin"
-      : session?.user?.role === "staff"
-      ? "/staff"
-      : "/dashboard";
+    const dest = callbackUrl ?? "/dashboard";
 
     // Use replace for clean redirect
     router.replace(dest);
-  }, [mounted, status, router, session?.user?.role]);
+  }, [mounted, status, router]);
 
   const callbackUrl =
     typeof window !== "undefined"
@@ -117,56 +98,6 @@ export default function SignInPage() {
     signIn("google", { callbackUrl: new URL(dest, window.location.origin).toString() });
   };
 
-  const handleStaffLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await signIn("staff-credentials", {
-        redirect: false,
-        email: staffEmail,
-        password: staffPassword,
-      });
-
-      if (res?.error) {
-        setError("Invalid staff credentials.");
-        setLoading(false);
-        return;
-      }
-
-      // Successful login: hard redirect to fresh session
-      window.location.href = callbackUrl ?? "/staff";
-    } catch (err) {
-      setError("Staff sign-in failed.");
-      setLoading(false);
-    }
-  };
-
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await signIn("admin-credentials", {
-        redirect: false,
-        email: adminEmail,
-        password: adminPassword,
-      });
-
-      if (res?.error) {
-        setError("Invalid admin credentials.");
-        setLoading(false);
-        return;
-      }
-
-      // Successful login: hard redirect to fresh session
-      window.location.href = callbackUrl ?? "/admin";
-    } catch (err) {
-      setError("Admin sign-in failed.");
-      setLoading(false);
-    }
-  };
-
   return (
     <main className="min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden bg-academy-dark">
       {/* Background */}
@@ -208,181 +139,72 @@ export default function SignInPage() {
           <p className="text-gray-400 text-sm">Sign in to access your dashboard</p>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-6">
-          {(["player", "staff", "admin"] as LoginTab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => { setTab(t); setError(""); }}
-              className={cn(
-                "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                tab === t
-                  ? t === "staff"
-                    ? "bg-emerald-500 text-black shadow-xl shadow-emerald-500/20"
-                    : t === "admin"
-                    ? "bg-academy-gold text-black shadow-xl shadow-academy-gold/20"
-                    : "bg-academy-red text-white shadow-xl shadow-academy-red/20"
-                  : "text-gray-500 hover:text-white"
-              )}
-            >
-              {t === "player" ? "Player Login" : t === "staff" ? "Staff Login" : "Admin Login"}
-            </button>
-          ))}
-        </div>
-
         <Card className="p-6 md:p-8 border-white/5 bg-academy-gray/50 backdrop-blur-2xl shadow-2xl">
+          <div className="space-y-6">
+            <form onSubmit={handlePlayerLogin} className="space-y-4">
+              <Input
+                label="Email Address"
+                type="email"
+                placeholder="you@example.com"
+                value={playerEmail}
+                onChange={(e) => setPlayerEmail(e.target.value)}
+              />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={playerPassword}
+                onChange={(e) => setPlayerPassword(e.target.value)}
+              />
 
-          {/* ── PLAYER PANEL ─────────────────────────────────────── */}
-          {tab === "player" && (
-            <div className="space-y-6">
-              <form onSubmit={handlePlayerLogin} className="space-y-4">
-                <Input
-                  label="Email Address"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={playerEmail}
-                  onChange={(e) => setPlayerEmail(e.target.value)}
-                />
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={playerPassword}
-                  onChange={(e) => setPlayerPassword(e.target.value)}
-                />
-
-                {error && (
-                  <div className="space-y-4">
-                    <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
-                      {error}
-                    </p>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
-                  disabled={loading}
-                >
-                  {loading ? "Signing In…" : "Sign In"} <ArrowRight className="ml-2" />
-                </Button>
-              </form>
-
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/5"></div>
+              {error && (
+                <div className="space-y-4">
+                  <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
+                    {error}
+                  </p>
                 </div>
-                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                  <span className="bg-academy-gray px-4 text-gray-500">OR</span>
-                </div>
-              </div>
+              )}
 
               <Button
-                type="button"
-                variant="outline"
-                className="w-full h-12 uppercase tracking-widest text-[10px] font-black bg-white/5 border-white/10 hover:bg-white/10"
-                onClick={handleGoogleLogin}
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
+                disabled={loading}
               >
-                <Image src="https://www.google.com/favicon.ico" alt="Google" width={14} height={14} className="mr-2" />
-                Sign in with Google
+                {loading ? "Signing In…" : "Sign In"} <ArrowRight className="ml-2" />
               </Button>
+            </form>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/5"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                <span className="bg-academy-gray px-4 text-gray-500">OR</span>
+              </div>
             </div>
-          )}
 
-
-
-          {/* ── STAFF PANEL ──────────────────────────────────────── */}
-          {tab === "staff" && (
-            <form className="space-y-6" onSubmit={handleStaffLogin}>
-              <Input
-                label="Staff Email"
-                type="email"
-                placeholder="staff@samarth.com"
-                value={staffEmail}
-                onChange={(e) => setStaffEmail(e.target.value)}
-              />
-              <Input
-                label="Password"
-                type="password"
-                placeholder="••••••••"
-                value={staffPassword}
-                onChange={(e) => setStaffPassword(e.target.value)}
-              />
-
-              {error && (
-                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
-                  {error}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
-                disabled={loading}
-              >
-                <Users className="mr-2" /> {loading ? "Authenticating…" : "Staff Access"}
-              </Button>
-
-              {/* Demo Staff Hint */}
-              <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Add staff via Admin Panel first</p>
-                <p className="text-[10px] text-gray-400 text-center">Use admin to create a staff account to test staff login</p>
-              </div>
-            </form>
-          )}
-
-          {/* ── ADMIN PANEL ──────────────────────────────────────── */}
-          {tab === "admin" && (
-            <form className="space-y-6" onSubmit={handleAdminLogin}>
-              <Input
-                label="Admin Email"
-                type="email"
-                placeholder="admin@samarth.com"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-              />
-              <Input
-                label="Password"
-                type="password"
-                placeholder="••••••••"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-              />
-
-              {error && (
-                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
-                  {error}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
-                disabled={loading}
-              >
-                <ShieldCheck className="mr-2" /> {loading ? "Authenticating…" : "Admin Access"}
-              </Button>
-            </form>
-          )}
-
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 uppercase tracking-widest text-[10px] font-black bg-white/5 border-white/10 hover:bg-white/10"
+              onClick={handleGoogleLogin}
+            >
+              <Image src="https://www.google.com/favicon.ico" alt="Google" width={14} height={14} className="mr-2" />
+              Sign in with Google
+            </Button>
+          </div>
         </Card>
 
         {/* Footer */}
         <div className="mt-10 text-center space-y-4">
-          {tab === "player" && (
-            <p className="text-sm font-medium text-gray-400">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-academy-red font-black uppercase tracking-widest hover:underline">
-                Register Now
-              </Link>
-            </p>
-          )}
+          <p className="text-sm font-medium text-gray-400">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-academy-red font-black uppercase tracking-widest hover:underline">
+              Register Now
+            </Link>
+          </p>
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">
             Secure Academy Access Control
           </p>

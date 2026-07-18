@@ -3,23 +3,33 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import { signIn, useSession } from "next-auth/react";
+
+type LoginTab = "admin" | "staff";
 
 export default function AdminSignInPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
+  const [tab, setTab] = useState<LoginTab>("admin");
+  const [mounted, setMounted] = useState(false);
+
+  // Admin state
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
+  // Staff state
+  const [staffEmail, setStaffEmail] = useState("");
+  const [staffPassword, setStaffPassword] = useState("");
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -27,9 +37,14 @@ export default function AdminSignInPage() {
 
   useEffect(() => {
     if (!mounted || status !== "authenticated") return;
-    if (session?.user?.role === "admin") {
-      router.replace("/admin");
-    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("error")) return;
+
+    const callbackUrl = params.get("callbackUrl");
+    const dest = callbackUrl ?? (session?.user?.role === "admin" ? "/admin" : "/staff");
+
+    router.replace(dest);
   }, [mounted, status, router, session?.user?.role]);
 
   const callbackUrl =
@@ -57,6 +72,30 @@ export default function AdminSignInPage() {
       window.location.href = callbackUrl ?? "/admin";
     } catch (err) {
       setError("Admin sign-in failed.");
+      setLoading(false);
+    }
+  };
+
+  const handleStaffLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await signIn("staff-credentials", {
+        redirect: false,
+        email: staffEmail,
+        password: staffPassword,
+      });
+
+      if (res?.error) {
+        setError("Invalid staff credentials.");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = callbackUrl ?? "/staff";
+    } catch (err) {
+      setError("Staff sign-in failed.");
       setLoading(false);
     }
   };
@@ -100,39 +139,103 @@ export default function AdminSignInPage() {
           <p className="text-gray-400 text-sm">Sign in to manage the academy</p>
         </div>
 
-        <Card className="p-6 md:p-8 border-white/5 bg-academy-gray/50 backdrop-blur-2xl shadow-2xl">
-          <form className="space-y-6" onSubmit={handleAdminLogin}>
-            <Input
-              label="Admin Email"
-              type="email"
-              placeholder="admin@samarth.com"
-              value={adminEmail}
-              onChange={(e) => setAdminEmail(e.target.value)}
-            />
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-            />
-
-            {error && (
-              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
-                {error}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
-              disabled={loading}
+        {/* Tab switcher */}
+        <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-6">
+          {(["admin", "staff"] as LoginTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setError(""); }}
+              className={cn(
+                "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                tab === t
+                  ? t === "staff"
+                    ? "bg-emerald-500 text-black shadow-xl shadow-emerald-500/20"
+                    : "bg-academy-gold text-black shadow-xl shadow-academy-gold/20"
+                  : "text-gray-500 hover:text-white"
+              )}
             >
-              <ShieldCheck className="mr-2" /> {loading ? "Authenticating…" : "Admin Sign In"}
-            </Button>
-          </form>
+              {t === "admin" ? "Admin Login" : "Staff Login"}
+            </button>
+          ))}
+        </div>
+
+        <Card className="p-6 md:p-8 border-white/5 bg-academy-gray/50 backdrop-blur-2xl shadow-2xl">
+          {/* ── ADMIN PANEL ──────────────────────────────────────── */}
+          {tab === "admin" && (
+            <form className="space-y-6" onSubmit={handleAdminLogin}>
+              <Input
+                label="Admin Email"
+                type="email"
+                placeholder="admin@samarth.com"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+              />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+              />
+
+              {error && (
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
+                disabled={loading}
+              >
+                <ShieldCheck className="mr-2" /> {loading ? "Authenticating…" : "Admin Access"}
+              </Button>
+            </form>
+          )}
+
+          {/* ── STAFF PANEL ──────────────────────────────────────── */}
+          {tab === "staff" && (
+            <form className="space-y-6" onSubmit={handleStaffLogin}>
+              <Input
+                label="Staff Email"
+                type="email"
+                placeholder="staff@samarth.com"
+                value={staffEmail}
+                onChange={(e) => setStaffEmail(e.target.value)}
+              />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={staffPassword}
+                onChange={(e) => setStaffPassword(e.target.value)}
+              />
+
+              {error && (
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
+                disabled={loading}
+              >
+                <Users className="mr-2" /> {loading ? "Authenticating…" : "Staff Access"}
+              </Button>
+
+              <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Add staff via Admin Panel first</p>
+                <p className="text-[10px] text-gray-400 text-center">Use admin to create a staff account to test staff login</p>
+              </div>
+            </form>
+          )}
         </Card>
 
         <div className="mt-10 text-center space-y-4">
