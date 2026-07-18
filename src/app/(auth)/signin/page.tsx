@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -11,7 +11,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { signIn, useSession } from "next-auth/react";
 
-type LoginTab = "player" | "staff";
+type LoginTab = "player" | "staff" | "admin";
 
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   NO_MEMBERSHIP: "No approved membership found for this Google account. Please apply for membership first.",
@@ -36,6 +36,10 @@ export default function SignInPage() {
   // Staff state
   const [staffEmail, setStaffEmail] = useState("");
   const [staffPassword, setStaffPassword] = useState("");
+
+  // Admin state
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -138,6 +142,31 @@ export default function SignInPage() {
     }
   };
 
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await signIn("admin-credentials", {
+        redirect: false,
+        email: adminEmail,
+        password: adminPassword,
+      });
+
+      if (res?.error) {
+        setError("Invalid admin credentials.");
+        setLoading(false);
+        return;
+      }
+
+      // Successful login: hard redirect to fresh session
+      window.location.href = callbackUrl ?? "/admin";
+    } catch (err) {
+      setError("Admin sign-in failed.");
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden bg-academy-dark">
       {/* Background */}
@@ -181,7 +210,7 @@ export default function SignInPage() {
 
         {/* Tab switcher */}
         <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-6">
-          {(["player", "staff"] as LoginTab[]).map((t) => (
+          {(["player", "staff", "admin"] as LoginTab[]).map((t) => (
             <button
               key={t}
               onClick={() => { setTab(t); setError(""); }}
@@ -190,11 +219,13 @@ export default function SignInPage() {
                 tab === t
                   ? t === "staff"
                     ? "bg-emerald-500 text-black shadow-xl shadow-emerald-500/20"
+                    : t === "admin"
+                    ? "bg-academy-gold text-black shadow-xl shadow-academy-gold/20"
                     : "bg-academy-red text-white shadow-xl shadow-academy-red/20"
                   : "text-gray-500 hover:text-white"
               )}
             >
-              {t === "player" ? "Player Login" : "Staff Login"}
+              {t === "player" ? "Player Login" : t === "staff" ? "Staff Login" : "Admin Login"}
             </button>
           ))}
         </div>
@@ -257,15 +288,6 @@ export default function SignInPage() {
                 <Image src="https://www.google.com/favicon.ico" alt="Google" width={14} height={14} className="mr-2" />
                 Sign in with Google
               </Button>
-
-              {/* Demo Credentials Hint */}
-              <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Demo Player Account</p>
-                <div className="space-y-2 text-[10px] font-bold text-center">
-                  <p className="text-gray-400">Email: <span className="text-white">player@samarth.com</span></p>
-                  <p className="text-gray-400">Pass: <span className="text-white">player123</span></p>
-                </div>
-              </div>
             </div>
           )}
 
@@ -310,6 +332,42 @@ export default function SignInPage() {
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 text-center mb-2">Add staff via Admin Panel first</p>
                 <p className="text-[10px] text-gray-400 text-center">Use admin to create a staff account to test staff login</p>
               </div>
+            </form>
+          )}
+
+          {/* ── ADMIN PANEL ──────────────────────────────────────── */}
+          {tab === "admin" && (
+            <form className="space-y-6" onSubmit={handleAdminLogin}>
+              <Input
+                label="Admin Email"
+                type="email"
+                placeholder="admin@samarth.com"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+              />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+              />
+
+              {error && (
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-xl">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full h-14 text-base uppercase tracking-widest font-black shadow-2xl"
+                disabled={loading}
+              >
+                <ShieldCheck className="mr-2" /> {loading ? "Authenticating…" : "Admin Access"}
+              </Button>
             </form>
           )}
 
