@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     }
 
     const { data: attendanceList, error: attError } = await adminClient
-      .from("attendances")
+      .from("attendance")
       .select("*")
       .eq("branch_id", branchId)
       .eq("date", date);
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     for (const record of records) {
       // Check if exists first
       const { data: existing } = await adminClient
-        .from("attendances")
+        .from("attendance")
         .select("id")
         .eq("user_id", record.user_id)
         .eq("branch_id", branchId)
@@ -77,13 +77,13 @@ export async function POST(req: Request) {
       if (existing) {
         // Update
         await adminClient
-          .from("attendances")
+          .from("attendance")
           .update({ status: record.status })
           .eq("id", existing.id);
       } else {
         // Insert
         await adminClient
-          .from("attendances")
+          .from("attendance")
           .insert({
             id: crypto.randomUUID(),
             user_id: record.user_id,
