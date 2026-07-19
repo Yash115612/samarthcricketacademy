@@ -17,7 +17,7 @@ export default function ShopPage() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedProduct, setSelectedStaff] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -51,14 +51,14 @@ export default function ShopPage() {
 
   const handleOpenAddModal = () => {
     setIsEditMode(false);
-    setSelectedStaff(null);
+    setSelectedProduct(null);
     setFormData({ name: "", price: "", stock: "", category: "", description: "" });
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (product: any) => {
     setIsEditMode(true);
-    setSelectedStaff(product);
+    setSelectedProduct(product);
     setFormData({ 
       name: product.name, 
       price: product.price.toString(), 

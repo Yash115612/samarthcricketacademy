@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { adminClient } from "@/lib/supabase";
 import { getAdminBranchId } from "@/server/branch";
 import { BATCHES } from "@/data/batches";
-import { genId } from "@/lib/utils";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   try {
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
         await adminClient
           .from("attendances")
           .insert({
-            id: genId("att"),
+            id: crypto.randomUUID(),
             user_id: record.user_id,
             branch_id: branchId,
             date,

@@ -114,14 +114,6 @@ export interface DbAttendance {
   status: "Present" | "Absent";
 }
 
-export interface DbStaffAttendance {
-  id: DbId;
-  staff_id: DbId;
-  branch_id: BranchId;
-  date: string;
-  status: "Present" | "Absent";
-}
-
 export interface DbNotice {
   id: DbId;
   branch_id: BranchId;
@@ -173,19 +165,6 @@ export interface DbBranch {
   description: string;
   head_coach: string;
   established: string;
-}
-
-export interface DbStaff {
-  id: DbId;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-  branch_id: BranchId;
-  status: "Active" | "Inactive";
-  experience: string;
-  bio?: string;
-  image?: string;
 }
 
 export interface DbTransaction {
@@ -309,12 +288,10 @@ interface DbState {
   users: DbUser[];
   memberships: DbMembership[];
   branches: DbBranch[];
-  staff: DbStaff[];
   matches: DbMatch[];
   match_participants: DbMatchParticipant[];
   performance: DbPerformance[];
   attendance: DbAttendance[];
-  staff_attendance: DbStaffAttendance[];
   notices: DbNotice[];
   payments: DbPayment[];
   payment_verifications: DbPaymentVerification[];
@@ -528,13 +505,11 @@ function buildSeedData(): DbState {
         membership_status: "active",
       },
     ],
-    staff: [],
     memberships: [],
     matches: [],
     match_participants: [],
     performance: [],
     attendance: [],
-    staff_attendance: [],
     notices: [],
     payments: [],
     payment_verifications: [],
@@ -641,7 +616,6 @@ const indexes = {
   usersByEmail: new Map<string, DbUser>(),
   membershipsById: new Map<string, DbMembership>(),
   membershipsByUser: new Map<string, DbMembership[]>(),
-  staffById: new Map<string, DbStaff>(),
   matchesById: new Map<string, DbMatch>(),
   paymentVerificationsById: new Map<string, DbPaymentVerification>(),
   notificationsByUser: new Map<string, DbNotification[]>(),
@@ -663,9 +637,6 @@ function rebuildIndexes() {
     userMems.push(m);
     indexes.membershipsByUser.set(m.user_id, userMems);
   });
-
-  indexes.staffById.clear();
-  db.staff.forEach((s) => indexes.staffById.set(s.id, s));
 
   indexes.matchesById.clear();
   db.matches.forEach((m) => indexes.matchesById.set(m.id, m));
@@ -1048,36 +1019,6 @@ export const memberships = {
   },
 };
 
-// ── Staff methods ─────────────────────────────────────────────────────────────
-
-export const staff = {
-  listByBranch: (branch_id: BranchId) => db.staff.filter((s) => s.branch_id === branch_id),
-  getById: (id: string) => db.staff.find((s) => s.id === id) ?? null,
-  create: (params: Omit<DbStaff, "id">) => {
-    const s: DbStaff = { id: genId("s"), ...params };
-    db.staff.push(s);
-    saveDb();
-    return s;
-  },
-  update: (id: string, patch: Partial<DbStaff>) => {
-    const s = staff.getById(id);
-    if (s) {
-      Object.assign(s, patch);
-      saveDb();
-    }
-    return s;
-  },
-  delete: (id: string) => {
-    const idx = db.staff.findIndex((s) => s.id === id);
-    if (idx !== -1) {
-      db.staff.splice(idx, 1);
-      saveDb();
-      return true;
-    }
-    return false;
-  },
-};
-
 // ── Match methods ─────────────────────────────────────────────────────────────
 
 export const matches = {
@@ -1221,21 +1162,6 @@ export const attendance = {
   },
 };
 
-export const staffAttendance = {
-  listByBranchAndDate: (branch_id: BranchId, date: string) =>
-    db.staff_attendance.filter((a) => a.branch_id === branch_id && a.date === date),
-  mark: async (params: { staff_id: string; branch_id: BranchId; date: string; status: "Present" | "Absent" }) => {
-    const existingIndex = db.staff_attendance.findIndex(
-      (a) => a.staff_id === params.staff_id && a.branch_id === params.branch_id && a.date === params.date
-    );
-    if (existingIndex > -1) {
-      db.staff_attendance[existingIndex].status = params.status;
-    } else {
-      db.staff_attendance.push({ id: genId("satt"), ...params });
-    }
-    await saveDb();
-  },
-};
 
 // ── Match participant methods ─────────────────────────────────────────────────
 

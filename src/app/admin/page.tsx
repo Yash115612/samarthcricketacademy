@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users, CreditCard, MessageSquare, UserSquare,
@@ -11,62 +14,84 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import { getAdminBranchId } from "@/server/branch";
-import { users, memberships, enquiries, matches, paymentVerifications, settings } from "@/server/db/inMemoryDb";
-import { getCached, setCache } from "@/server/cache";
+import { useAdminBranch } from "@/context/AdminBranchContext";
 import { DashboardActions } from "@/components/admin/DashboardActions";
 import { AdminStatsGrid } from "@/components/admin/AdminStatsGrid";
 import { AdminShortcuts } from "@/components/admin/AdminShortcuts";
 import { AdminNotifications } from "@/components/admin/AdminNotifications";
 
 export default function AdminDashboard() {
-  const branchId = getAdminBranchId();
-  const cacheKey = `admin_dashboard_${branchId}`;
-  
-  // Try to get from cache first
-  const cachedData = getCached<any>(cacheKey);
-  
-  let dashboardData;
-  if (cachedData) {
-    dashboardData = cachedData;
-  } else {
-    // Fetch real data (Optimized counts)
-    const totalPlayersCount = users.countByBranch(branchId);
-    const activePlayersCount = users.countActiveByBranch(branchId);
-    
-    // Full list only for what's needed for counts not yet optimized
-    const allMemberships = memberships.listByBranch(branchId);
-    const activeMemberships = allMemberships.filter(m => m.status === "Active");
-    const expiringMemberships = allMemberships.filter(m => memberships.isExpiringSoon(m));
-    
-    const allEnquiries = enquiries.list(branchId);
-    const allMatches = matches.listByBranch(branchId);
-    const liveMatches = allMatches.filter(m => m.status === "Live");
-    const upcomingMatches = allMatches.filter(m => m.status === "Upcoming");
+  const { currentBranchId, branchName } = useAdminBranch();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [todayAttendance, setTodayAttendance] = useState<{ total: number; present: number }>({ total: 0, present: 0 });
 
-    const branchSettings = settings.get(branchId) || {
-      total_pt_slots: 10,
-      used_pt_slots: 0,
-      payment_qr_url: "",
-      payment_upi_id: "",
-      payment_instructions: []
-    };
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Load users from API
+      const usersRes = await fetch("/api/admin/users");
+      const usersData = await usersRes.json();
+      
+      // Load today's attendance
+      const today = new Date().toISOString().split("T")[0];
+      const attRes = await fetch(`/api/admin/attendance?date=${today}`);
+      const attData = await attRes.json();
 
-    dashboardData = {
-      totalPlayersCount,
-      activePlayersCount,
-      activeMembershipsCount: activeMemberships.length,
-      expiringMemberships: expiringMemberships.slice(0, 1),
-      allEnquiriesCount: allEnquiries.length,
-      recentEnquiries: allEnquiries.slice(0, 2),
-      liveMatches,
-      upcomingMatches: upcomingMatches.slice(0, 3),
-      totalPtSlots: branchSettings.total_pt_slots,
-      usedPtSlots: branchSettings.used_pt_slots,
-      allMatchesCount: allMatches.length
-    };
-    
-    setCache(cacheKey, dashboardData);
+      // Calculate stats
+      const totalPlayers = usersData.users ? usersData.users.length : 0;
+      const activePlayers = usersData.users ? usersData.users.filter((u: any) => u.membership_status === "active").length : 0;
+      const presentCount = attData.attendance ? attData.attendance.filter((a: any) => a.status === "Present").length : 0;
+      const totalForAttendance = attData.players ? attData.players.length : 0;
+
+      setDashboardData({
+        totalPlayersCount: totalPlayers,
+        activeMembershipsCount: activePlayers,
+        totalPtSlots: 10,
+        usedPtSlots: 0,
+        allEnquiriesCount: 0,
+        liveMatches: [],
+        upcomingMatches: [],
+        expiringMemberships: [],
+        recentEnquiries: []
+      });
+
+      setTodayAttendance({
+        total: totalForAttendance,
+        present: presentCount
+      });
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error);
+      setDashboardData({
+        totalPlayersCount: 0,
+        activeMembershipsCount: 0,
+        totalPtSlots: 10,
+        usedPtSlots: 0,
+        allEnquiriesCount: 0,
+        liveMatches: [],
+        upcomingMatches: [],
+        expiringMemberships: [],
+        recentEnquiries: []
+      });
+      setTodayAttendance({ total: 0, present: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [currentBranchId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-academy-gold border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Loading Dashboard...</span>
+        </div>
+      </div>
+    );
   }
 
   const STATS = [
@@ -100,7 +125,7 @@ export default function AdminDashboard() {
     ...dashboardData.expiringMemberships.map((m: any) => ({
       id: m.id,
       title: "Membership Expiring",
-      desc: `${users.getById(m.user_id)?.name || 'User'} expiring soon`,
+      desc: "User expiring soon",
       time: "Alert",
       icon: AlertTriangle,
       color: "bg-amber-500/10 text-amber-500",
@@ -109,12 +134,12 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-12 pb-24 max-w-7xl mx-auto px-4 md:px-0">
+    <div className="space-y-8 md:space-y-12 pb-24 max-w-7xl mx-auto px-4 md:px-0">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
         <div>
           <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-2 text-white">DASHBOARD</h1>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">Real-time performance for {branchId === "samarth" ? "Samarth Academy" : "AIMS Academy"}</p>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">Real-time performance for {branchName}</p>
         </div>
         <div className="flex flex-wrap gap-3 md:gap-4 w-full md:w-auto">
           <Link href="/admin/reports" className="flex-1 md:flex-none">
@@ -141,6 +166,47 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Section */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Attendance Shortcut Card */}
+          <Link href="/admin/attendance">
+            <Card className="border-white/5 bg-gradient-to-br from-academy-gold/10 to-transparent backdrop-blur-xl rounded-[2rem] hover:border-academy-gold/30 transition-all cursor-pointer">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-academy-gold flex items-center justify-center text-academy-dark">
+                      <Calendar size={28} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black uppercase tracking-tight text-white">Today&apos;s Attendance</h3>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowUpRight size={20} className="text-gray-500 group-hover:text-white transition-all" />
+                </div>
+                <div className="mt-6 flex items-center gap-8">
+                  <div>
+                    <p className="text-4xl font-black text-academy-gold">{todayAttendance.present}</p>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Present</p>
+                  </div>
+                  <div className="text-gray-600">/</div>
+                  <div>
+                    <p className="text-4xl font-black text-white">{todayAttendance.total}</p>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total</p>
+                  </div>
+                  {todayAttendance.total > 0 && (
+                    <div className="ml-auto">
+                      <p className="text-2xl font-black text-emerald-400">
+                        {Math.round((todayAttendance.present / todayAttendance.total) * 100)}%
+                      </p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Attendance Rate</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           {/* Admin Shortcuts */}
           <AdminShortcuts shortcuts={SHORTCUTS} />
 
@@ -167,7 +233,7 @@ export default function AdminDashboard() {
                     </div>
                   </Link>
                 ))}
-                {dashboardData.allMatchesCount === 0 && (
+                {dashboardData.allMatchesCount === 0 && [...dashboardData.liveMatches, ...dashboardData.upcomingMatches].length === 0 && (
                   <p className="text-center text-gray-500 text-[10px] font-black uppercase py-4">No matches scheduled</p>
                 )}
                 <Link href="/admin/matches">
@@ -202,8 +268,10 @@ export default function AdminDashboard() {
                 <Globe size={24} />
               </div>
               <div>
-                <h3 className="text-sm font-black uppercase tracking-tight text-white">{branchId === "samarth" ? "Samarth Academy" : "AIMS Academy"}</h3>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{branchId === "samarth" ? "Pune, MH" : "Mumbai, MH"}</p>
+                <h3 className="text-sm font-black uppercase tracking-tight text-white">{branchName}</h3>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                  {currentBranchId === "samarth" ? "Mira Bhayander" : "Mumbai"}, MH
+                </p>
               </div>
             </div>
             <div className="space-y-4">
