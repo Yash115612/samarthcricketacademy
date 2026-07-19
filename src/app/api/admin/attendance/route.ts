@@ -9,6 +9,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get("date");
     const branchId = getAdminBranchId();
+    
+    console.log("[Attendance API] GET called with branchId:", branchId, "date:", date);
 
     if (!date) {
       return NextResponse.json({ ok: false, error: "DATE_REQUIRED" }, { status: 400 });
@@ -21,9 +23,10 @@ export async function GET(req: Request) {
       .eq("date", date);
     
     if (attError) {
-      console.error("Attendance GET error:", attError);
+      console.error("[Attendance API] Attendance GET error:", attError);
       return NextResponse.json({ ok: false, error: "DB_ERROR" }, { status: 500 });
     }
+    console.log("[Attendance API] Attendance list fetched:", attendanceList?.length, "records");
 
     const { data: players, error: usersError } = await adminClient
       .from("users")
@@ -32,9 +35,10 @@ export async function GET(req: Request) {
       .eq("role", "player");
     
     if (usersError) {
-      console.error("Players GET error:", usersError);
+      console.error("[Attendance API] Players GET error:", usersError);
       return NextResponse.json({ ok: false, error: "DB_ERROR" }, { status: 500 });
     }
+    console.log("[Attendance API] Players fetched:", players?.length, "players");
 
     const branchBatches = BATCHES.filter(b => b.branch_id === branchId);
 
@@ -45,7 +49,7 @@ export async function GET(req: Request) {
       batches: branchBatches
     });
   } catch (error) {
-    console.error("Attendance GET error:", error);
+    console.error("[Attendance API] Attendance GET error:", error);
     return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
   }
 }
