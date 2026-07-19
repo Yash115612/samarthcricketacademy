@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   const { currentBranchId, branchName } = useAdminBranch();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [todayAttendance, setTodayAttendance] = useState<{ total: number; present: number }>({ total: 0, present: 0 });
+  const [todayAttendance, setTodayAttendance] = useState<{ total: number; present: number; absent: number }>({ total: 0, present: 0, absent: 0 });
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -42,6 +42,7 @@ export default function AdminDashboard() {
       const totalPlayers = usersData.users ? usersData.users.length : 0;
       const activePlayers = usersData.users ? usersData.users.filter((u: any) => u.membership_status === "active").length : 0;
       const presentCount = attData.attendance ? attData.attendance.filter((a: any) => a.status === "Present").length : 0;
+      const absentCount = attData.attendance ? attData.attendance.filter((a: any) => a.status === "Absent").length : 0;
       const totalForAttendance = attData.players ? attData.players.length : 0;
 
       setDashboardData({
@@ -58,7 +59,8 @@ export default function AdminDashboard() {
 
       setTodayAttendance({
         total: totalForAttendance,
-        present: presentCount
+        present: presentCount,
+        absent: absentCount
       });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
@@ -73,7 +75,7 @@ export default function AdminDashboard() {
         expiringMemberships: [],
         recentEnquiries: []
       });
-      setTodayAttendance({ total: 0, present: 0 });
+      setTodayAttendance({ total: 0, present: 0, absent: 0 });
     } finally {
       setLoading(false);
     }
@@ -189,7 +191,12 @@ export default function AdminDashboard() {
                     <p className="text-4xl font-black text-academy-gold">{todayAttendance.present}</p>
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Present</p>
                   </div>
-                  <div className="text-gray-600">/</div>
+                  <div className="text-gray-600">|</div>
+                  <div>
+                    <p className="text-4xl font-black text-red-500">{todayAttendance.absent}</p>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Absent</p>
+                  </div>
+                  <div className="text-gray-600">|</div>
                   <div>
                     <p className="text-4xl font-black text-white">{todayAttendance.total}</p>
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total</p>
